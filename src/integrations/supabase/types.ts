@@ -14,16 +14,520 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      activity_logs: {
+        Row: {
+          action: string
+          actor_email: string | null
+          actor_id: string | null
+          created_at: string
+          entity_id: string | null
+          entity_type: string | null
+          id: string
+          metadata: Json | null
+        }
+        Insert: {
+          action: string
+          actor_email?: string | null
+          actor_id?: string | null
+          created_at?: string
+          entity_id?: string | null
+          entity_type?: string | null
+          id?: string
+          metadata?: Json | null
+        }
+        Update: {
+          action?: string
+          actor_email?: string | null
+          actor_id?: string | null
+          created_at?: string
+          entity_id?: string | null
+          entity_type?: string | null
+          id?: string
+          metadata?: Json | null
+        }
+        Relationships: []
+      }
+      clients: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          email: string | null
+          first_name: string
+          id: string
+          last_name: string | null
+          notes: string | null
+          phone: string | null
+          photo_url: string | null
+          pseudo: string | null
+          status: Database["public"]["Enums"]["entity_status"]
+          updated_at: string
+          whatsapp: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          email?: string | null
+          first_name: string
+          id?: string
+          last_name?: string | null
+          notes?: string | null
+          phone?: string | null
+          photo_url?: string | null
+          pseudo?: string | null
+          status?: Database["public"]["Enums"]["entity_status"]
+          updated_at?: string
+          whatsapp?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          email?: string | null
+          first_name?: string
+          id?: string
+          last_name?: string | null
+          notes?: string | null
+          phone?: string | null
+          photo_url?: string | null
+          pseudo?: string | null
+          status?: Database["public"]["Enums"]["entity_status"]
+          updated_at?: string
+          whatsapp?: string | null
+        }
+        Relationships: []
+      }
+      internet_forfaits: {
+        Row: {
+          created_at: string
+          duration_days: number
+          id: string
+          is_active: boolean
+          name: string
+          price: number
+        }
+        Insert: {
+          created_at?: string
+          duration_days: number
+          id?: string
+          is_active?: boolean
+          name: string
+          price?: number
+        }
+        Update: {
+          created_at?: string
+          duration_days?: number
+          id?: string
+          is_active?: boolean
+          name?: string
+          price?: number
+        }
+        Relationships: []
+      }
+      internet_subscriptions: {
+        Row: {
+          client_id: string | null
+          client_name: string
+          created_at: string
+          duration_days: number
+          forfait_id: string | null
+          id: string
+          notes: string | null
+          phone: string | null
+          price: number
+          sim_card: string | null
+          sim_number: string | null
+          start_date: string
+          status: Database["public"]["Enums"]["entity_status"]
+          updated_at: string
+        }
+        Insert: {
+          client_id?: string | null
+          client_name: string
+          created_at?: string
+          duration_days?: number
+          forfait_id?: string | null
+          id?: string
+          notes?: string | null
+          phone?: string | null
+          price?: number
+          sim_card?: string | null
+          sim_number?: string | null
+          start_date?: string
+          status?: Database["public"]["Enums"]["entity_status"]
+          updated_at?: string
+        }
+        Update: {
+          client_id?: string | null
+          client_name?: string
+          created_at?: string
+          duration_days?: number
+          forfait_id?: string | null
+          id?: string
+          notes?: string | null
+          phone?: string | null
+          price?: number
+          sim_card?: string | null
+          sim_number?: string | null
+          start_date?: string
+          status?: Database["public"]["Enums"]["entity_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "internet_subscriptions_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "internet_subscriptions_forfait_id_fkey"
+            columns: ["forfait_id"]
+            isOneToOne: false
+            referencedRelation: "internet_forfaits"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      netflix_accounts: {
+        Row: {
+          created_at: string
+          created_on: string
+          email: string
+          expires_on: string | null
+          id: string
+          notes: string | null
+          password: string
+          profiles_capacity: number
+          status: Database["public"]["Enums"]["entity_status"]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_on?: string
+          email: string
+          expires_on?: string | null
+          id?: string
+          notes?: string | null
+          password: string
+          profiles_capacity?: number
+          status?: Database["public"]["Enums"]["entity_status"]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_on?: string
+          email?: string
+          expires_on?: string | null
+          id?: string
+          notes?: string | null
+          password?: string
+          profiles_capacity?: number
+          status?: Database["public"]["Enums"]["entity_status"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      netflix_profiles: {
+        Row: {
+          account_id: string
+          client_id: string | null
+          created_at: string
+          duration_days: number
+          id: string
+          pin: string | null
+          price: number
+          profile_name: string
+          pseudo: string | null
+          start_date: string | null
+          status: Database["public"]["Enums"]["entity_status"]
+          updated_at: string
+        }
+        Insert: {
+          account_id: string
+          client_id?: string | null
+          created_at?: string
+          duration_days?: number
+          id?: string
+          pin?: string | null
+          price?: number
+          profile_name: string
+          pseudo?: string | null
+          start_date?: string | null
+          status?: Database["public"]["Enums"]["entity_status"]
+          updated_at?: string
+        }
+        Update: {
+          account_id?: string
+          client_id?: string | null
+          created_at?: string
+          duration_days?: number
+          id?: string
+          pin?: string | null
+          price?: number
+          profile_name?: string
+          pseudo?: string | null
+          start_date?: string | null
+          status?: Database["public"]["Enums"]["entity_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "netflix_profiles_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "netflix_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "netflix_profiles_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payments: {
+        Row: {
+          amount: number
+          client_id: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          paid_at: string
+          reference: string | null
+          service_slug: string
+        }
+        Insert: {
+          amount: number
+          client_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          paid_at?: string
+          reference?: string | null
+          service_slug: string
+        }
+        Update: {
+          amount?: number
+          client_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          paid_at?: string
+          reference?: string | null
+          service_slug?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payments_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          full_name: string | null
+          id: string
+          phone: string | null
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          full_name?: string | null
+          id: string
+          phone?: string | null
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          full_name?: string | null
+          id?: string
+          phone?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      services: {
+        Row: {
+          color: string | null
+          created_at: string
+          default_duration_days: number
+          default_price: number
+          description: string | null
+          id: string
+          is_builtin: boolean
+          logo_url: string | null
+          name: string
+          slug: string
+          updated_at: string
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string
+          default_duration_days?: number
+          default_price?: number
+          description?: string | null
+          id?: string
+          is_builtin?: boolean
+          logo_url?: string | null
+          name: string
+          slug: string
+          updated_at?: string
+        }
+        Update: {
+          color?: string | null
+          created_at?: string
+          default_duration_days?: number
+          default_price?: number
+          description?: string | null
+          id?: string
+          is_builtin?: boolean
+          logo_url?: string | null
+          name?: string
+          slug?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      spotify_accounts: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          notes: string | null
+          password: string
+          seats: number
+          status: Database["public"]["Enums"]["entity_status"]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          notes?: string | null
+          password: string
+          seats?: number
+          status?: Database["public"]["Enums"]["entity_status"]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          notes?: string | null
+          password?: string
+          seats?: number
+          status?: Database["public"]["Enums"]["entity_status"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      spotify_members: {
+        Row: {
+          account_id: string
+          client_id: string | null
+          created_at: string
+          duration_days: number
+          id: string
+          member_email: string | null
+          member_name: string
+          price: number
+          pseudo: string | null
+          start_date: string | null
+          status: Database["public"]["Enums"]["entity_status"]
+          updated_at: string
+        }
+        Insert: {
+          account_id: string
+          client_id?: string | null
+          created_at?: string
+          duration_days?: number
+          id?: string
+          member_email?: string | null
+          member_name: string
+          price?: number
+          pseudo?: string | null
+          start_date?: string | null
+          status?: Database["public"]["Enums"]["entity_status"]
+          updated_at?: string
+        }
+        Update: {
+          account_id?: string
+          client_id?: string | null
+          created_at?: string
+          duration_days?: number
+          id?: string
+          member_email?: string | null
+          member_name?: string
+          price?: number
+          pseudo?: string | null
+          start_date?: string | null
+          status?: Database["public"]["Enums"]["entity_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "spotify_members_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "spotify_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "spotify_members_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
+      is_staff: { Args: { _user_id: string }; Returns: boolean }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "manager"
+      entity_status: "active" | "suspended" | "expired" | "pending"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +654,9 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "manager"],
+      entity_status: ["active", "suspended", "expired", "pending"],
+    },
   },
 } as const
