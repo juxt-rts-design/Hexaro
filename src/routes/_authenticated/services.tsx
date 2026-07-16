@@ -56,7 +56,7 @@ function ServicesPage() {
         actions={isAdmin && (
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild><Button className="bg-brand text-brand-foreground gap-2"><Plus className="h-4 w-4" /> Nouveau service</Button></DialogTrigger>
-            <ServiceForm onSubmit={(v) => create.mutate(v)} submitting={create.isPending} />
+            <ServiceForm onSubmit={(v: any) => create.mutate(v)} submitting={create.isPending} />
           </Dialog>
         )}
       />

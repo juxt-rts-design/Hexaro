@@ -113,7 +113,7 @@ function InternetPage() {
         {openSub !== undefined && (
           <DialogContent>
             <DialogHeader><DialogTitle>{openSub.id ? "Modifier l'abonnement" : "Nouveau client SIM"}</DialogTitle></DialogHeader>
-            <SubForm initial={openSub} clients={clients} forfaits={forfaits} onSubmit={(v) => upsertSub.mutate({ ...v, id: openSub.id })} submitting={upsertSub.isPending} />
+            <SubForm initial={openSub} clients={clients} forfaits={forfaits} onSubmit={(v: any) => upsertSub.mutate({ ...v, id: openSub.id })} submitting={upsertSub.isPending} />
           </DialogContent>
         )}
       </Dialog>
