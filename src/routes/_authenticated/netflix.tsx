@@ -106,7 +106,7 @@ function NetflixPage() {
             <DialogTrigger asChild>
               <Button className="bg-brand text-brand-foreground hover:opacity-90 gap-2"><Plus className="h-4 w-4" /> Nouveau compte</Button>
             </DialogTrigger>
-            <AccountForm onSubmit={(v) => createAcc.mutate(v)} submitting={createAcc.isPending} />
+            <AccountForm onSubmit={(v: any) => createAcc.mutate(v)} submitting={createAcc.isPending} />
           </Dialog>
         }
       />
@@ -139,7 +139,7 @@ function NetflixPage() {
             accountId={openProfile.accountId}
             initial={openProfile.profile}
             clients={clients}
-            onSubmit={(v) => upsertProfile.mutate({ ...v, id: openProfile.profile?.id, account_id: openProfile.accountId })}
+            onSubmit={(v: any) => upsertProfile.mutate({ ...v, id: openProfile.profile?.id, account_id: openProfile.accountId })}
             submitting={upsertProfile.isPending}
           />
         )}
