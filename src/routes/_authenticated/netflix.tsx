@@ -124,8 +124,8 @@ function NetflixPage() {
                 accProfiles={accProfiles}
                 clients={clients}
                 onDelete={() => { if (confirm("Supprimer ce compte et tous ses profils ?")) delAcc.mutate(acc.id); }}
-                onEditProfile={(p) => setOpenProfile({ accountId: acc.id, profile: p })}
-                onDeleteProfile={(id) => { if (confirm("Supprimer ce profil ?")) delProfile.mutate(id); }}
+                onEditProfile={(p: any) => setOpenProfile({ accountId: acc.id, profile: p })}
+                onDeleteProfile={(id: string) => { if (confirm("Supprimer ce profil ?")) delProfile.mutate(id); }}
                 onNewProfile={() => setOpenProfile({ accountId: acc.id })}
               />
             );

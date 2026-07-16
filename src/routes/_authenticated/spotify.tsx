@@ -104,8 +104,8 @@ function SpotifyPage() {
               <AccountCard key={acc.id} acc={acc} members={accMembers} remaining={remaining}
                 onDelete={() => { if (confirm("Supprimer ce compte et ses membres ?")) delAcc.mutate(acc.id); }}
                 onNewMember={() => setOpenMember({ accountId: acc.id })}
-                onEditMember={(m) => setOpenMember({ accountId: acc.id, member: m })}
-                onDeleteMember={(id) => { if (confirm("Retirer ce membre ?")) delMember.mutate(id); }}
+                onEditMember={(m: any) => setOpenMember({ accountId: acc.id, member: m })}
+                onDeleteMember={(id: string) => { if (confirm("Retirer ce membre ?")) delMember.mutate(id); }}
               />
             );
           })}
