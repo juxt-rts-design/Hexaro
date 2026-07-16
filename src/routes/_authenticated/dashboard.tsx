@@ -57,7 +57,7 @@ function Dashboard() {
   const weekAgo = new Date(today); weekAgo.setDate(weekAgo.getDate() - 7);
   const monthAgo = new Date(today); monthAgo.setDate(monthAgo.getDate() - 30);
 
-  const sum = (arr: typeof data.payments) => (arr ?? []).reduce((a, p) => a + Number(p.amount), 0);
+  const sum = (arr: Array<{ amount: number | string }>) => (arr ?? []).reduce((a, p) => a + Number(p.amount), 0);
   const payments = data?.payments ?? [];
   const revToday = sum(payments.filter((p) => new Date(p.paid_at) >= today));
   const revWeek = sum(payments.filter((p) => new Date(p.paid_at) >= weekAgo));
