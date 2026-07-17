@@ -36,7 +36,7 @@ function SpotifyPage() {
     mutationFn: async (v: any) => {
       const { error } = await supabase.from("spotify_accounts").insert({
         email: v.email, password: v.password,
-        members_capacity: parseInt(v.members_capacity) || 6,
+        seats: parseInt(v.seats) || 6,
         expires_on: v.expires_on || null,
       });
       if (error) throw error;
@@ -141,7 +141,7 @@ function AccountCard({ acc, list, onDelete, onEditMember, onDeleteMember, onNewM
         <div className="flex-1 min-w-0">
           <p className="font-semibold truncate">{acc.email}</p>
           <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
-            <span>{list.length}/{acc.members_capacity} membres</span>
+            <span>{list.length}/{acc.seats} membres</span>
             <span>·</span>
             <button onClick={() => setShowPw(!showPw)} className="flex items-center gap-1 hover:text-foreground">
               {showPw ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
@@ -185,7 +185,7 @@ function AccountCard({ acc, list, onDelete, onEditMember, onDeleteMember, onNewM
 }
 
 function AccountForm({ onSubmit, submitting }: any) {
-  const [v, setV] = useState({ email: "", password: "", members_capacity: "6", expires_on: "" });
+  const [v, setV] = useState({ email: "", password: "", seats: "6", expires_on: "" });
   return (
     <DialogContent>
       <DialogHeader><DialogTitle>Nouveau compte Spotify</DialogTitle></DialogHeader>
@@ -193,7 +193,7 @@ function AccountForm({ onSubmit, submitting }: any) {
         <div className="space-y-2"><Label>Email</Label><Input required value={v.email} onChange={(e) => setV({ ...v, email: e.target.value })} /></div>
         <div className="space-y-2"><Label>Mot de passe</Label><Input required value={v.password} onChange={(e) => setV({ ...v, password: e.target.value })} /></div>
         <div className="grid grid-cols-2 gap-3">
-          <div className="space-y-2"><Label>Membres max</Label><Input type="number" min="1" max="10" value={v.members_capacity} onChange={(e) => setV({ ...v, members_capacity: e.target.value })} /></div>
+          <div className="space-y-2"><Label>Membres max</Label><Input type="number" min="1" max="10" value={v.seats} onChange={(e) => setV({ ...v, seats: e.target.value })} /></div>
           <div className="space-y-2"><Label>Expire le</Label><Input type="date" value={v.expires_on} onChange={(e) => setV({ ...v, expires_on: e.target.value })} /></div>
         </div>
         <DialogFooter><Button type="submit" disabled={submitting} className="bg-brand text-brand-foreground">{submitting ? "…" : "Créer"}</Button></DialogFooter>
