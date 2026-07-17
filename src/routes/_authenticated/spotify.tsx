@@ -184,17 +184,14 @@ function AccountCard({ acc, list, onDelete, onEditMember, onDeleteMember, onNewM
 }
 
 function AccountForm({ onSubmit, submitting }: any) {
-  const [v, setV] = useState({ email: "", password: "", seats: "6", expires_on: "" });
+  const [v, setV] = useState({ email: "", password: "", seats: "6" });
   return (
     <DialogContent>
       <DialogHeader><DialogTitle>Nouveau compte Spotify</DialogTitle></DialogHeader>
       <form onSubmit={(e) => { e.preventDefault(); onSubmit(v); }} className="space-y-4">
         <div className="space-y-2"><Label>Email</Label><Input required value={v.email} onChange={(e) => setV({ ...v, email: e.target.value })} /></div>
         <div className="space-y-2"><Label>Mot de passe</Label><Input required value={v.password} onChange={(e) => setV({ ...v, password: e.target.value })} /></div>
-        <div className="grid grid-cols-2 gap-3">
-          <div className="space-y-2"><Label>Membres max</Label><Input type="number" min="1" max="10" value={v.seats} onChange={(e) => setV({ ...v, seats: e.target.value })} /></div>
-          <div className="space-y-2"><Label>Expire le</Label><Input type="date" value={v.expires_on} onChange={(e) => setV({ ...v, expires_on: e.target.value })} /></div>
-        </div>
+        <div className="space-y-2"><Label>Membres max</Label><Input type="number" min="1" max="10" value={v.seats} onChange={(e) => setV({ ...v, seats: e.target.value })} /></div>
         <DialogFooter><Button type="submit" disabled={submitting} className="bg-brand text-brand-foreground">{submitting ? "…" : "Créer"}</Button></DialogFooter>
       </form>
     </DialogContent>
