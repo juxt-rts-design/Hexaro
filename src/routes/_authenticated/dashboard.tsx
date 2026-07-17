@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { PageHeader, StatCard } from "@/components/hexaro-ui";
-import { Users, Film, Music2, Wifi, AlertTriangle, TrendingUp, Wallet, Clock } from "lucide-react";
+import { Film, Music2, Wifi, AlertTriangle, TrendingUp, Wallet, Clock } from "lucide-react";
 import { formatMoney, computeExpiration, formatDateTime } from "@/lib/hexaro";
 import { useAuth } from "@/hooks/useAuth";
 import {
