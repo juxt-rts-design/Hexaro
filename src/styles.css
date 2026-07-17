@@ -108,12 +108,12 @@
 
   --sidebar: oklch(0.98 0.005 250);
   --sidebar-foreground: oklch(0.2 0.04 260);
-  --sidebar-primary: oklch(0.72 0.19 47);
+  --sidebar-primary: oklch(0.65 0.18 155);
   --sidebar-primary-foreground: oklch(0.99 0 0);
   --sidebar-accent: oklch(0.95 0.01 250);
   --sidebar-accent-foreground: oklch(0.22 0.05 260);
   --sidebar-border: oklch(0.92 0.01 255);
-  --sidebar-ring: oklch(0.72 0.19 47);
+  --sidebar-ring: oklch(0.65 0.18 155);
 }
 
 .dark {
