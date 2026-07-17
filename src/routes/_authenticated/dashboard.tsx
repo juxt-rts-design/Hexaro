@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { PageHeader, StatCard } from "@/components/hexaro-ui";
-import { Users, Film, Music2, Wifi, AlertTriangle, TrendingUp, Wallet, Clock } from "lucide-react";
+import { Film, Music2, Wifi, AlertTriangle, TrendingUp, Wallet, Clock } from "lucide-react";
 import { formatMoney, computeExpiration, formatDateTime } from "@/lib/hexaro";
 import { useAuth } from "@/hooks/useAuth";
 import {
@@ -25,8 +25,7 @@ function Dashboard() {
   const { data, isLoading } = useQuery({
     queryKey: ["dashboard"],
     queryFn: async () => {
-      const [clients, nfp, spm, isub, pays, logs] = await Promise.all([
-        supabase.from("clients").select("id", { count: "exact", head: true }),
+      const [nfp, spm, isub, pays, logs] = await Promise.all([
         supabase.from("netflix_profiles").select("id, start_date, duration_days, status"),
         supabase.from("spotify_members").select("id, start_date, duration_days, status"),
         supabase.from("internet_subscriptions").select("id, start_date, duration_days, status"),
@@ -34,7 +33,6 @@ function Dashboard() {
         supabase.from("activity_logs").select("action, actor_email, entity_type, created_at").order("created_at", { ascending: false }).limit(8),
       ]);
       return {
-        clientsCount: clients.count ?? 0,
         netflix: nfp.data ?? [],
         spotify: spm.data ?? [],
         internet: isub.data ?? [],
@@ -77,12 +75,11 @@ function Dashboard() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title={`Bonjour, ${displayName} 👋`}
+        title={`Bonjour, ${displayName}`}
         description="Voici l'état de votre business Hexaro en temps réel."
       />
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <StatCard label="Clients" value={data?.clientsCount ?? "—"} icon={Users} />
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <StatCard label="Netflix actifs" value={active.netflix} icon={Film} tone="brand" />
         <StatCard label="Spotify actifs" value={active.spotify} icon={Music2} tone="success" />
         <StatCard label="Internet actifs" value={active.internet} icon={Wifi} tone="warning" />

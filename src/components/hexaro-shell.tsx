@@ -2,13 +2,14 @@ import { useState, type ReactNode } from "react";
 import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
 import {
   LayoutDashboard,
-  Users,
   Film,
   Music2,
   Wifi,
   Package,
   UserCog,
   History,
+  FolderOpen,
+  FileBarChart,
   LogOut,
   Menu,
   Bell,
@@ -26,11 +27,12 @@ import { toast } from "sonner";
 
 const NAV = [
   { to: "/dashboard", label: "Tableau de bord", icon: LayoutDashboard },
-  { to: "/clients", label: "Clients", icon: Users },
   { to: "/netflix", label: "Netflix", icon: Film },
   { to: "/spotify", label: "Spotify", icon: Music2 },
   { to: "/internet", label: "Internet", icon: Wifi },
   { to: "/services", label: "Services", icon: Package },
+  { to: "/media", label: "Médias", icon: FolderOpen },
+  { to: "/reports", label: "Fiches & Rapports", icon: FileBarChart },
   { to: "/activity", label: "Journal", icon: History },
 ] as const;
 
