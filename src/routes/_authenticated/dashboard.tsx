@@ -25,8 +25,7 @@ function Dashboard() {
   const { data, isLoading } = useQuery({
     queryKey: ["dashboard"],
     queryFn: async () => {
-      const [clients, nfp, spm, isub, pays, logs] = await Promise.all([
-        supabase.from("clients").select("id", { count: "exact", head: true }),
+      const [nfp, spm, isub, pays, logs] = await Promise.all([
         supabase.from("netflix_profiles").select("id, start_date, duration_days, status"),
         supabase.from("spotify_members").select("id, start_date, duration_days, status"),
         supabase.from("internet_subscriptions").select("id, start_date, duration_days, status"),
@@ -34,7 +33,6 @@ function Dashboard() {
         supabase.from("activity_logs").select("action, actor_email, entity_type, created_at").order("created_at", { ascending: false }).limit(8),
       ]);
       return {
-        clientsCount: clients.count ?? 0,
         netflix: nfp.data ?? [],
         spotify: spm.data ?? [],
         internet: isub.data ?? [],
