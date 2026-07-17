@@ -16,6 +16,7 @@ import { Route as AuthenticatedTeamRouteImport } from './routes/_authenticated/t
 import { Route as AuthenticatedSpotifyRouteImport } from './routes/_authenticated/spotify'
 import { Route as AuthenticatedServicesRouteImport } from './routes/_authenticated/services'
 import { Route as AuthenticatedNetflixRouteImport } from './routes/_authenticated/netflix'
+import { Route as AuthenticatedMediaRouteImport } from './routes/_authenticated/media'
 import { Route as AuthenticatedInternetRouteImport } from './routes/_authenticated/internet'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedActivityRouteImport } from './routes/_authenticated/activity'
@@ -54,6 +55,11 @@ const AuthenticatedNetflixRoute = AuthenticatedNetflixRouteImport.update({
   path: '/netflix',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedMediaRoute = AuthenticatedMediaRouteImport.update({
+  id: '/media',
+  path: '/media',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedInternetRoute = AuthenticatedInternetRouteImport.update({
   id: '/internet',
   path: '/internet',
@@ -76,6 +82,7 @@ export interface FileRoutesByFullPath {
   '/activity': typeof AuthenticatedActivityRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/internet': typeof AuthenticatedInternetRoute
+  '/media': typeof AuthenticatedMediaRoute
   '/netflix': typeof AuthenticatedNetflixRoute
   '/services': typeof AuthenticatedServicesRoute
   '/spotify': typeof AuthenticatedSpotifyRoute
@@ -87,6 +94,7 @@ export interface FileRoutesByTo {
   '/activity': typeof AuthenticatedActivityRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/internet': typeof AuthenticatedInternetRoute
+  '/media': typeof AuthenticatedMediaRoute
   '/netflix': typeof AuthenticatedNetflixRoute
   '/services': typeof AuthenticatedServicesRoute
   '/spotify': typeof AuthenticatedSpotifyRoute
@@ -100,6 +108,7 @@ export interface FileRoutesById {
   '/_authenticated/activity': typeof AuthenticatedActivityRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/internet': typeof AuthenticatedInternetRoute
+  '/_authenticated/media': typeof AuthenticatedMediaRoute
   '/_authenticated/netflix': typeof AuthenticatedNetflixRoute
   '/_authenticated/services': typeof AuthenticatedServicesRoute
   '/_authenticated/spotify': typeof AuthenticatedSpotifyRoute
@@ -113,6 +122,7 @@ export interface FileRouteTypes {
     | '/activity'
     | '/dashboard'
     | '/internet'
+    | '/media'
     | '/netflix'
     | '/services'
     | '/spotify'
@@ -124,6 +134,7 @@ export interface FileRouteTypes {
     | '/activity'
     | '/dashboard'
     | '/internet'
+    | '/media'
     | '/netflix'
     | '/services'
     | '/spotify'
@@ -136,6 +147,7 @@ export interface FileRouteTypes {
     | '/_authenticated/activity'
     | '/_authenticated/dashboard'
     | '/_authenticated/internet'
+    | '/_authenticated/media'
     | '/_authenticated/netflix'
     | '/_authenticated/services'
     | '/_authenticated/spotify'
@@ -199,6 +211,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedNetflixRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/media': {
+      id: '/_authenticated/media'
+      path: '/media'
+      fullPath: '/media'
+      preLoaderRoute: typeof AuthenticatedMediaRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/internet': {
       id: '/_authenticated/internet'
       path: '/internet'
@@ -227,6 +246,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedActivityRoute: typeof AuthenticatedActivityRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedInternetRoute: typeof AuthenticatedInternetRoute
+  AuthenticatedMediaRoute: typeof AuthenticatedMediaRoute
   AuthenticatedNetflixRoute: typeof AuthenticatedNetflixRoute
   AuthenticatedServicesRoute: typeof AuthenticatedServicesRoute
   AuthenticatedSpotifyRoute: typeof AuthenticatedSpotifyRoute
@@ -237,6 +257,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedActivityRoute: AuthenticatedActivityRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedInternetRoute: AuthenticatedInternetRoute,
+  AuthenticatedMediaRoute: AuthenticatedMediaRoute,
   AuthenticatedNetflixRoute: AuthenticatedNetflixRoute,
   AuthenticatedServicesRoute: AuthenticatedServicesRoute,
   AuthenticatedSpotifyRoute: AuthenticatedSpotifyRoute,
