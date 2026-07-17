@@ -7,11 +7,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Plus, Film, ChevronDown, Trash2, Pencil, Eye, EyeOff } from "lucide-react";
+import { Plus, ChevronDown, Trash2, Pencil, Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
 import { computeExpiration, formatMoney } from "@/lib/hexaro";
+import { NetflixLogo } from "@/components/brand-logos";
 
 export const Route = createFileRoute("/_authenticated/netflix")({
   head: () => ({ meta: [{ title: "Netflix — Hexaro" }] }),
@@ -25,23 +25,11 @@ function NetflixPage() {
 
   const { data: accounts = [] } = useQuery({
     queryKey: ["nf_accounts"],
-    queryFn: async () => {
-      const { data, error } = await supabase.from("netflix_accounts").select("*").order("created_at", { ascending: false });
-      if (error) throw error;
-      return data;
-    },
+    queryFn: async () => (await supabase.from("netflix_accounts").select("*").order("created_at", { ascending: false })).data ?? [],
   });
   const { data: profiles = [] } = useQuery({
     queryKey: ["nf_profiles"],
-    queryFn: async () => {
-      const { data, error } = await supabase.from("netflix_profiles").select("*, clients(first_name, last_name)").order("created_at", { ascending: false });
-      if (error) throw error;
-      return data;
-    },
-  });
-  const { data: clients = [] } = useQuery({
-    queryKey: ["clients_light"],
-    queryFn: async () => (await supabase.from("clients").select("id, first_name, last_name, pseudo").order("first_name")).data ?? [],
+    queryFn: async () => (await supabase.from("netflix_profiles").select("*").order("created_at", { ascending: false })).data ?? [],
   });
 
   const createAcc = useMutation({
@@ -70,7 +58,6 @@ function NetflixPage() {
         profile_name: v.profile_name,
         pin: v.pin || null,
         pseudo: v.pseudo || null,
-        client_id: v.client_id || null,
         start_date: v.start_date ? new Date(v.start_date).toISOString() : new Date().toISOString(),
         duration_days: parseInt(v.duration_days) || 30,
         price: parseFloat(v.price) || 0,
@@ -81,9 +68,8 @@ function NetflixPage() {
       } else {
         const { error } = await supabase.from("netflix_profiles").insert(payload);
         if (error) throw error;
-        // Log revenue
         if (payload.price > 0) {
-          await supabase.from("payments").insert({ service_slug: "netflix", client_id: payload.client_id, amount: payload.price, reference: `Netflix — ${payload.profile_name}` });
+          await supabase.from("payments").insert({ service_slug: "netflix", amount: payload.price, reference: `Netflix — ${payload.profile_name}` });
         }
       }
     },
@@ -99,7 +85,7 @@ function NetflixPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Netflix"
+        title={<span className="flex items-center gap-3"><NetflixLogo className="h-6 w-auto" /> <span>Netflix</span></span> as any}
         description={`${accounts.length} compte(s) · ${profiles.length} profil(s)`}
         actions={
           <Dialog open={openAcc} onOpenChange={setOpenAcc}>
@@ -122,7 +108,6 @@ function NetflixPage() {
                 key={acc.id}
                 acc={acc}
                 accProfiles={accProfiles}
-                clients={clients}
                 onDelete={() => { if (confirm("Supprimer ce compte et tous ses profils ?")) delAcc.mutate(acc.id); }}
                 onEditProfile={(p: any) => setOpenProfile({ accountId: acc.id, profile: p })}
                 onDeleteProfile={(id: string) => { if (confirm("Supprimer ce profil ?")) delProfile.mutate(id); }}
@@ -136,9 +121,7 @@ function NetflixPage() {
       <Dialog open={!!openProfile} onOpenChange={(o) => !o && setOpenProfile(null)}>
         {openProfile && (
           <ProfileForm
-            accountId={openProfile.accountId}
             initial={openProfile.profile}
-            clients={clients}
             onSubmit={(v: any) => upsertProfile.mutate({ ...v, id: openProfile.profile?.id, account_id: openProfile.accountId })}
             submitting={upsertProfile.isPending}
           />
@@ -148,14 +131,14 @@ function NetflixPage() {
   );
 }
 
-function AccountCard({ acc, accProfiles, clients, onDelete, onEditProfile, onDeleteProfile, onNewProfile }: any) {
+function AccountCard({ acc, accProfiles, onDelete, onEditProfile, onDeleteProfile, onNewProfile }: any) {
   const [open, setOpen] = useState(true);
   const [showPw, setShowPw] = useState(false);
   return (
     <Collapsible open={open} onOpenChange={setOpen} className="hex-glass rounded-2xl overflow-hidden">
       <div className="flex items-center gap-4 p-5">
-        <div className="h-11 w-11 rounded-xl grid place-items-center bg-[oklch(0.5_0.25_25)]/20 text-[oklch(0.7_0.25_25)]">
-          <Film className="h-5 w-5" />
+        <div className="h-11 w-11 rounded-xl grid place-items-center bg-[#E50914]/15">
+          <NetflixLogo className="h-4 w-auto" />
         </div>
         <div className="flex-1 min-w-0">
           <p className="font-semibold truncate">{acc.email}</p>
@@ -180,18 +163,16 @@ function AccountCard({ acc, accProfiles, clients, onDelete, onEditProfile, onDel
           {accProfiles.length === 0 && <p className="text-sm text-muted-foreground col-span-full text-center py-6">Aucun profil sur ce compte.</p>}
           {accProfiles.map((p: any) => {
             const exp = computeExpiration(p.start_date, p.duration_days);
-            const client = p.clients ? `${p.clients.first_name} ${p.clients.last_name ?? ""}`.trim() : "Non attribué";
             return (
               <div key={p.id} className="rounded-xl border border-border bg-background/40 p-4 group">
                 <div className="flex items-start justify-between">
                   <div>
                     <p className="font-semibold">{p.profile_name}</p>
-                    <p className="text-xs text-muted-foreground">{p.pseudo ? `@${p.pseudo}` : ""} · PIN {p.pin ?? "—"}</p>
+                    <p className="text-xs text-muted-foreground">{p.pseudo ? `@${p.pseudo}` : "—"} · PIN {p.pin ?? "—"}</p>
                   </div>
                   <StatusPill tone={exp.tone}>{exp.label}</StatusPill>
                 </div>
-                <p className="text-sm mt-3">{client}</p>
-                <p className="text-xs text-muted-foreground">{formatMoney(p.price)} · {p.duration_days}j</p>
+                <p className="text-xs text-muted-foreground mt-3">{formatMoney(p.price)} · {p.duration_days}j</p>
                 <div className="mt-3 flex gap-1 opacity-0 group-hover:opacity-100 transition">
                   <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => onEditProfile(p)}><Pencil className="h-3 w-3" /></Button>
                   <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive" onClick={() => onDeleteProfile(p.id)}><Trash2 className="h-3 w-3" /></Button>
@@ -223,12 +204,11 @@ function AccountForm({ onSubmit, submitting }: any) {
   );
 }
 
-function ProfileForm({ accountId, initial, clients, onSubmit, submitting }: any) {
+function ProfileForm({ initial, onSubmit, submitting }: any) {
   const [v, setV] = useState({
     profile_name: initial?.profile_name ?? "",
     pin: initial?.pin ?? "",
     pseudo: initial?.pseudo ?? "",
-    client_id: initial?.client_id ?? "",
     start_date: initial?.start_date ? new Date(initial.start_date).toISOString().slice(0, 10) : new Date().toISOString().slice(0, 10),
     duration_days: String(initial?.duration_days ?? 30),
     price: String(initial?.price ?? 3000),
@@ -237,19 +217,9 @@ function ProfileForm({ accountId, initial, clients, onSubmit, submitting }: any)
     <DialogContent>
       <DialogHeader><DialogTitle>{initial ? "Modifier le profil" : "Nouveau profil"}</DialogTitle></DialogHeader>
       <form onSubmit={(e) => { e.preventDefault(); onSubmit(v); }} className="grid grid-cols-2 gap-3">
-        <div className="space-y-2 col-span-2"><Label>Nom du profil *</Label><Input required value={v.profile_name} onChange={(e) => setV({ ...v, profile_name: e.target.value })} /></div>
+        <div className="space-y-2 col-span-2"><Label>Nom du client / profil *</Label><Input required value={v.profile_name} onChange={(e) => setV({ ...v, profile_name: e.target.value })} /></div>
         <div className="space-y-2"><Label>PIN</Label><Input value={v.pin} onChange={(e) => setV({ ...v, pin: e.target.value })} maxLength={6} /></div>
-        <div className="space-y-2"><Label>Pseudo</Label><Input value={v.pseudo} onChange={(e) => setV({ ...v, pseudo: e.target.value })} /></div>
-        <div className="space-y-2 col-span-2">
-          <Label>Client</Label>
-          <Select value={v.client_id || "_none"} onValueChange={(x) => setV({ ...v, client_id: x === "_none" ? "" : x })}>
-            <SelectTrigger><SelectValue placeholder="Non attribué" /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="_none">Non attribué</SelectItem>
-              {clients.map((c: any) => <SelectItem key={c.id} value={c.id}>{c.first_name} {c.last_name ?? ""} {c.pseudo && `(@${c.pseudo})`}</SelectItem>)}
-            </SelectContent>
-          </Select>
-        </div>
+        <div className="space-y-2"><Label>Pseudo / Téléphone</Label><Input value={v.pseudo} onChange={(e) => setV({ ...v, pseudo: e.target.value })} /></div>
         <div className="space-y-2"><Label>Date début</Label><Input type="date" value={v.start_date} onChange={(e) => setV({ ...v, start_date: e.target.value })} /></div>
         <div className="space-y-2"><Label>Durée (jours)</Label><Input type="number" min="1" value={v.duration_days} onChange={(e) => setV({ ...v, duration_days: e.target.value })} /></div>
         <div className="space-y-2 col-span-2"><Label>Prix (F)</Label><Input type="number" min="0" value={v.price} onChange={(e) => setV({ ...v, price: e.target.value })} /></div>
