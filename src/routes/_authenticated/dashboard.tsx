@@ -75,12 +75,11 @@ function Dashboard() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title={`Bonjour, ${displayName} 👋`}
+        title={`Bonjour, ${displayName}`}
         description="Voici l'état de votre business Hexaro en temps réel."
       />
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <StatCard label="Clients" value={data?.clientsCount ?? "—"} icon={Users} />
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <StatCard label="Netflix actifs" value={active.netflix} icon={Film} tone="brand" />
         <StatCard label="Spotify actifs" value={active.spotify} icon={Music2} tone="success" />
         <StatCard label="Internet actifs" value={active.internet} icon={Wifi} tone="warning" />
