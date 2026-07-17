@@ -15,6 +15,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedTeamRouteImport } from './routes/_authenticated/team'
 import { Route as AuthenticatedSpotifyRouteImport } from './routes/_authenticated/spotify'
 import { Route as AuthenticatedServicesRouteImport } from './routes/_authenticated/services'
+import { Route as AuthenticatedReportsRouteImport } from './routes/_authenticated/reports'
 import { Route as AuthenticatedNetflixRouteImport } from './routes/_authenticated/netflix'
 import { Route as AuthenticatedMediaRouteImport } from './routes/_authenticated/media'
 import { Route as AuthenticatedInternetRouteImport } from './routes/_authenticated/internet'
@@ -48,6 +49,11 @@ const AuthenticatedSpotifyRoute = AuthenticatedSpotifyRouteImport.update({
 const AuthenticatedServicesRoute = AuthenticatedServicesRouteImport.update({
   id: '/services',
   path: '/services',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedReportsRoute = AuthenticatedReportsRouteImport.update({
+  id: '/reports',
+  path: '/reports',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedNetflixRoute = AuthenticatedNetflixRouteImport.update({
@@ -84,6 +90,7 @@ export interface FileRoutesByFullPath {
   '/internet': typeof AuthenticatedInternetRoute
   '/media': typeof AuthenticatedMediaRoute
   '/netflix': typeof AuthenticatedNetflixRoute
+  '/reports': typeof AuthenticatedReportsRoute
   '/services': typeof AuthenticatedServicesRoute
   '/spotify': typeof AuthenticatedSpotifyRoute
   '/team': typeof AuthenticatedTeamRoute
@@ -96,6 +103,7 @@ export interface FileRoutesByTo {
   '/internet': typeof AuthenticatedInternetRoute
   '/media': typeof AuthenticatedMediaRoute
   '/netflix': typeof AuthenticatedNetflixRoute
+  '/reports': typeof AuthenticatedReportsRoute
   '/services': typeof AuthenticatedServicesRoute
   '/spotify': typeof AuthenticatedSpotifyRoute
   '/team': typeof AuthenticatedTeamRoute
@@ -110,6 +118,7 @@ export interface FileRoutesById {
   '/_authenticated/internet': typeof AuthenticatedInternetRoute
   '/_authenticated/media': typeof AuthenticatedMediaRoute
   '/_authenticated/netflix': typeof AuthenticatedNetflixRoute
+  '/_authenticated/reports': typeof AuthenticatedReportsRoute
   '/_authenticated/services': typeof AuthenticatedServicesRoute
   '/_authenticated/spotify': typeof AuthenticatedSpotifyRoute
   '/_authenticated/team': typeof AuthenticatedTeamRoute
@@ -124,6 +133,7 @@ export interface FileRouteTypes {
     | '/internet'
     | '/media'
     | '/netflix'
+    | '/reports'
     | '/services'
     | '/spotify'
     | '/team'
@@ -136,6 +146,7 @@ export interface FileRouteTypes {
     | '/internet'
     | '/media'
     | '/netflix'
+    | '/reports'
     | '/services'
     | '/spotify'
     | '/team'
@@ -149,6 +160,7 @@ export interface FileRouteTypes {
     | '/_authenticated/internet'
     | '/_authenticated/media'
     | '/_authenticated/netflix'
+    | '/_authenticated/reports'
     | '/_authenticated/services'
     | '/_authenticated/spotify'
     | '/_authenticated/team'
@@ -204,6 +216,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedServicesRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/reports': {
+      id: '/_authenticated/reports'
+      path: '/reports'
+      fullPath: '/reports'
+      preLoaderRoute: typeof AuthenticatedReportsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/netflix': {
       id: '/_authenticated/netflix'
       path: '/netflix'
@@ -248,6 +267,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedInternetRoute: typeof AuthenticatedInternetRoute
   AuthenticatedMediaRoute: typeof AuthenticatedMediaRoute
   AuthenticatedNetflixRoute: typeof AuthenticatedNetflixRoute
+  AuthenticatedReportsRoute: typeof AuthenticatedReportsRoute
   AuthenticatedServicesRoute: typeof AuthenticatedServicesRoute
   AuthenticatedSpotifyRoute: typeof AuthenticatedSpotifyRoute
   AuthenticatedTeamRoute: typeof AuthenticatedTeamRoute
@@ -259,6 +279,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedInternetRoute: AuthenticatedInternetRoute,
   AuthenticatedMediaRoute: AuthenticatedMediaRoute,
   AuthenticatedNetflixRoute: AuthenticatedNetflixRoute,
+  AuthenticatedReportsRoute: AuthenticatedReportsRoute,
   AuthenticatedServicesRoute: AuthenticatedServicesRoute,
   AuthenticatedSpotifyRoute: AuthenticatedSpotifyRoute,
   AuthenticatedTeamRoute: AuthenticatedTeamRoute,
