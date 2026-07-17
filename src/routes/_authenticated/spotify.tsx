@@ -37,7 +37,6 @@ function SpotifyPage() {
       const { error } = await supabase.from("spotify_accounts").insert({
         email: v.email, password: v.password,
         seats: parseInt(v.seats) || 6,
-        expires_on: v.expires_on || null,
       });
       if (error) throw error;
     },
