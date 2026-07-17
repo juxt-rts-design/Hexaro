@@ -2,13 +2,14 @@ import { useState, type ReactNode } from "react";
 import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
 import {
   LayoutDashboard,
-  Users,
   Film,
   Music2,
   Wifi,
   Package,
   UserCog,
   History,
+  FolderOpen,
+  FileBarChart,
   LogOut,
   Menu,
   Bell,
