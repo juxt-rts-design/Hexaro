@@ -94,11 +94,11 @@
 
   --border: oklch(0.92 0.01 255);
   --input: oklch(0.92 0.01 255);
-  --ring: oklch(0.68 0.18 45);
+  --ring: oklch(0.68 0.17 155);
 
-  --brand: oklch(0.72 0.19 47);          /* orange Hexaro */
+  --brand: oklch(0.65 0.18 155);         /* vert Hexaro */
   --brand-foreground: oklch(0.99 0 0);
-  --brand-soft: oklch(0.95 0.05 60);
+  --brand-soft: oklch(0.95 0.05 155);
 
   --chart-1: oklch(0.72 0.19 47);
   --chart-2: oklch(0.55 0.14 260);
