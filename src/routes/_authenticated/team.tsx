@@ -13,6 +13,7 @@ import { toast } from "sonner";
 import { formatDateTime } from "@/lib/hexaro";
 import { useAuth } from "@/hooks/useAuth";
 import { Navigate } from "@tanstack/react-router";
+import { useConfirm } from "@/components/confirm-provider";
 
 export const Route = createFileRoute("/_authenticated/team")({
   head: () => ({ meta: [{ title: "Équipe — Hexaro" }] }),
