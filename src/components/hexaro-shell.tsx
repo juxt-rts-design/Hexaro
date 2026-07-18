@@ -90,10 +90,17 @@ export function HexaroShell({ children }: { children: ReactNode }) {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => {
-              setMobileOpen(true);
-              setDesktopOpen((v) => !v);
-            }}
+            className="lg:hidden"
+            onClick={() => setMobileOpen(true)}
+            aria-label="Ouvrir le menu"
+          >
+            <Menu className="h-5 w-5" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="hidden lg:inline-flex"
+            onClick={() => setDesktopOpen((v) => !v)}
             aria-label="Basculer le menu"
           >
             <Menu className="h-5 w-5" />
