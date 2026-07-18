@@ -170,7 +170,12 @@ function AccountCard({ acc, accProfiles, onDelete, onEditProfile, onDeleteProfil
           {accProfiles.map((p: any) => {
             const exp = computeExpiration(p.start_date, p.duration_days);
             return (
-              <div key={p.id} className="rounded-xl border border-border bg-background/40 p-4 group">
+              <button
+                key={p.id}
+                type="button"
+                onClick={() => onEditProfile(p)}
+                className="text-left rounded-xl border border-border bg-background/40 p-4 group hover:border-brand/50 hover:bg-background/60 transition cursor-pointer"
+              >
                 <div className="flex items-start justify-between">
                   <div>
                     <p className="font-semibold">{p.profile_name}</p>
@@ -178,12 +183,18 @@ function AccountCard({ acc, accProfiles, onDelete, onEditProfile, onDeleteProfil
                   </div>
                   <StatusPill tone={exp.tone}>{exp.label}</StatusPill>
                 </div>
-                <p className="text-xs text-muted-foreground mt-3">{formatMoney(p.price)} · {p.duration_days}j</p>
-                <div className="mt-3 flex gap-1 opacity-0 group-hover:opacity-100 transition">
-                  <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => onEditProfile(p)}><Pencil className="h-3 w-3" /></Button>
-                  <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive" onClick={() => onDeleteProfile(p.id)}><Trash2 className="h-3 w-3" /></Button>
+                <div className="mt-3 flex items-center justify-between">
+                  <p className="text-xs text-muted-foreground">{formatMoney(p.price)} · {p.duration_days}j</p>
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="h-7 w-7 text-destructive opacity-0 group-hover:opacity-100 transition"
+                    onClick={(e) => { e.stopPropagation(); onDeleteProfile(p.id, p.profile_name); }}
+                  >
+                    <Trash2 className="h-3 w-3" />
+                  </Button>
                 </div>
-              </div>
+              </button>
             );
           })}
         </div>
