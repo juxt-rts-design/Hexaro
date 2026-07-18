@@ -21,6 +21,7 @@ export const Route = createFileRoute("/_authenticated/services")({
 
 function ServicesPage() {
   const qc = useQueryClient();
+  const confirmAction = useConfirm();
   const { isAdmin } = useAuth();
   const [open, setOpen] = useState(false);
 
