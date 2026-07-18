@@ -8,10 +8,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Plus, ChevronDown, Trash2, Pencil, Eye, EyeOff } from "lucide-react";
+import { Plus, ChevronDown, Trash2, Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
 import { computeExpiration, formatMoney } from "@/lib/hexaro";
 import { NetflixLogo } from "@/components/brand-logos";
+import { useConfirm } from "@/components/confirm-provider";
 
 export const Route = createFileRoute("/_authenticated/netflix")({
   head: () => ({ meta: [{ title: "Netflix — Hexaro" }] }),
