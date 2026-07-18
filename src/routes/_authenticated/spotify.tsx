@@ -21,6 +21,7 @@ export const Route = createFileRoute("/_authenticated/spotify")({
 
 function SpotifyPage() {
   const qc = useQueryClient();
+  const confirmAction = useConfirm();
   const [openAcc, setOpenAcc] = useState(false);
   const [openMember, setOpenMember] = useState<{ accountId: string; member?: any } | null>(null);
 
