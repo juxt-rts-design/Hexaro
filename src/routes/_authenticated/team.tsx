@@ -23,6 +23,7 @@ export const Route = createFileRoute("/_authenticated/team")({
 function TeamPage() {
   const { isAdmin, loading } = useAuth();
   const qc = useQueryClient();
+  const confirmAction = useConfirm();
   const fetchTeam = useServerFn(listTeam);
   const createMgr = useServerFn(createManager);
   const removeMember = useServerFn(deleteTeamMember);
