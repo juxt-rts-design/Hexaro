@@ -97,7 +97,7 @@ function MediaPage() {
         <EmptyState title="Ce dossier est vide" description="Téléversez votre premier fichier." />
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
-          {filtered.map((f) => <FileTile key={f.name} folder={folder} file={f} onDownload={() => handleDownload(f.name)} onDelete={() => { if (confirm(`Supprimer ${f.name} ?`)) remove.mutate(f.name); }} />)}
+          {filtered.map((f) => <FileTile key={f.name} folder={folder} file={f} onDownload={() => handleDownload(f.name)} onDelete={async () => { if (await confirmAction({ title: "Supprimer ce fichier ?", description: f.name, destructive: true, confirmLabel: "Supprimer" })) remove.mutate(f.name); }} />)}
         </div>
       )}
     </div>
