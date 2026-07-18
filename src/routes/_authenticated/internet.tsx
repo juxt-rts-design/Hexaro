@@ -21,6 +21,7 @@ export const Route = createFileRoute("/_authenticated/internet")({
 
 function InternetPage() {
   const qc = useQueryClient();
+  const confirmAction = useConfirm();
   const [open, setOpen] = useState<{ sub?: any } | null>(null);
 
   const { data: subs = [] } = useQuery({
