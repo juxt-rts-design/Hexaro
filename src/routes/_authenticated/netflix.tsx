@@ -110,9 +110,13 @@ function NetflixPage() {
                 key={acc.id}
                 acc={acc}
                 accProfiles={accProfiles}
-                onDelete={() => { if (confirm("Supprimer ce compte et tous ses profils ?")) delAcc.mutate(acc.id); }}
+                onDelete={async () => {
+                  if (await confirmAction({ title: "Supprimer ce compte ?", description: `Le compte ${acc.email} et ses ${accProfiles.length} profil(s) seront définitivement supprimés.`, destructive: true, confirmLabel: "Supprimer" })) delAcc.mutate(acc.id);
+                }}
                 onEditProfile={(p: any) => setOpenProfile({ accountId: acc.id, profile: p })}
-                onDeleteProfile={(id: string) => { if (confirm("Supprimer ce profil ?")) delProfile.mutate(id); }}
+                onDeleteProfile={async (id: string, name: string) => {
+                  if (await confirmAction({ title: "Supprimer ce profil ?", description: `Le profil « ${name} » sera définitivement supprimé.`, destructive: true, confirmLabel: "Supprimer" })) delProfile.mutate(id);
+                }}
                 onNewProfile={() => setOpenProfile({ accountId: acc.id })}
               />
             );
