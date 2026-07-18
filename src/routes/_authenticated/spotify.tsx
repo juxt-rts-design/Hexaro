@@ -8,10 +8,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Plus, ChevronDown, Trash2, Pencil, Eye, EyeOff } from "lucide-react";
+import { Plus, ChevronDown, Trash2, Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
 import { computeExpiration, formatMoney } from "@/lib/hexaro";
 import { SpotifyLogo } from "@/components/brand-logos";
+import { useConfirm } from "@/components/confirm-provider";
 
 export const Route = createFileRoute("/_authenticated/spotify")({
   head: () => ({ meta: [{ title: "Spotify — Hexaro" }] }),
@@ -20,6 +21,7 @@ export const Route = createFileRoute("/_authenticated/spotify")({
 
 function SpotifyPage() {
   const qc = useQueryClient();
+  const confirmAction = useConfirm();
   const [openAcc, setOpenAcc] = useState(false);
   const [openMember, setOpenMember] = useState<{ accountId: string; member?: any } | null>(null);
 
@@ -105,9 +107,13 @@ function SpotifyPage() {
                 key={acc.id}
                 acc={acc}
                 list={list}
-                onDelete={() => { if (confirm("Supprimer ce compte et tous ses membres ?")) delAcc.mutate(acc.id); }}
+                onDelete={async () => {
+                  if (await confirmAction({ title: "Supprimer ce compte ?", description: `${acc.email} et ses ${list.length} membre(s) seront définitivement supprimés.`, destructive: true, confirmLabel: "Supprimer" })) delAcc.mutate(acc.id);
+                }}
                 onEditMember={(m: any) => setOpenMember({ accountId: acc.id, member: m })}
-                onDeleteMember={(id: string) => { if (confirm("Supprimer ce membre ?")) delMember.mutate(id); }}
+                onDeleteMember={async (id: string, name: string) => {
+                  if (await confirmAction({ title: "Supprimer ce membre ?", description: `« ${name} » sera définitivement supprimé.`, destructive: true, confirmLabel: "Supprimer" })) delMember.mutate(id);
+                }}
                 onNewMember={() => setOpenMember({ accountId: acc.id })}
               />
             );
@@ -161,7 +167,12 @@ function AccountCard({ acc, list, onDelete, onEditMember, onDeleteMember, onNewM
           {list.map((m: any) => {
             const exp = computeExpiration(m.start_date, m.duration_days);
             return (
-              <div key={m.id} className="rounded-xl border border-border bg-background/40 p-4 group">
+              <button
+                key={m.id}
+                type="button"
+                onClick={() => onEditMember(m)}
+                className="text-left rounded-xl border border-border bg-background/40 p-4 group hover:border-brand/50 hover:bg-background/60 transition cursor-pointer"
+              >
                 <div className="flex items-start justify-between">
                   <div>
                     <p className="font-semibold">{m.member_name}</p>
@@ -169,12 +180,18 @@ function AccountCard({ acc, list, onDelete, onEditMember, onDeleteMember, onNewM
                   </div>
                   <StatusPill tone={exp.tone}>{exp.label}</StatusPill>
                 </div>
-                <p className="text-xs text-muted-foreground mt-3">{formatMoney(m.price)} · {m.duration_days}j</p>
-                <div className="mt-3 flex gap-1 opacity-0 group-hover:opacity-100 transition">
-                  <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => onEditMember(m)}><Pencil className="h-3 w-3" /></Button>
-                  <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive" onClick={() => onDeleteMember(m.id)}><Trash2 className="h-3 w-3" /></Button>
+                <div className="mt-3 flex items-center justify-between">
+                  <p className="text-xs text-muted-foreground">{formatMoney(m.price)} · {m.duration_days}j</p>
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="h-7 w-7 text-destructive opacity-0 group-hover:opacity-100 transition"
+                    onClick={(e) => { e.stopPropagation(); onDeleteMember(m.id, m.member_name); }}
+                  >
+                    <Trash2 className="h-3 w-3" />
+                  </Button>
                 </div>
-              </div>
+              </button>
             );
           })}
         </div>

@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Upload, Download, Trash2, FileText, Image as ImageIcon, Video, File as FileIcon, FolderPlus } from "lucide-react";
 import { toast } from "sonner";
+import { useConfirm } from "@/components/confirm-provider";
 
 export const Route = createFileRoute("/_authenticated/media")({
   head: () => ({ meta: [{ title: "Médias — Hexaro" }] }),
@@ -17,6 +18,7 @@ const FOLDERS = ["affiches", "videos", "fiches", "documents"] as const;
 
 function MediaPage() {
   const qc = useQueryClient();
+  const confirmAction = useConfirm();
   const [folder, setFolder] = useState<string>("affiches");
   const [search, setSearch] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
@@ -95,7 +97,7 @@ function MediaPage() {
         <EmptyState title="Ce dossier est vide" description="Téléversez votre premier fichier." />
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
-          {filtered.map((f) => <FileTile key={f.name} folder={folder} file={f} onDownload={() => handleDownload(f.name)} onDelete={() => { if (confirm(`Supprimer ${f.name} ?`)) remove.mutate(f.name); }} />)}
+          {filtered.map((f) => <FileTile key={f.name} folder={folder} file={f} onDownload={() => handleDownload(f.name)} onDelete={async () => { if (await confirmAction({ title: "Supprimer ce fichier ?", description: f.name, destructive: true, confirmLabel: "Supprimer" })) remove.mutate(f.name); }} />)}
         </div>
       )}
     </div>

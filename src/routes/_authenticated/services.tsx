@@ -12,6 +12,7 @@ import { Plus, Package, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { formatMoney } from "@/lib/hexaro";
 import { useAuth } from "@/hooks/useAuth";
+import { useConfirm } from "@/components/confirm-provider";
 
 export const Route = createFileRoute("/_authenticated/services")({
   head: () => ({ meta: [{ title: "Services — Hexaro" }] }),
@@ -20,6 +21,7 @@ export const Route = createFileRoute("/_authenticated/services")({
 
 function ServicesPage() {
   const qc = useQueryClient();
+  const confirmAction = useConfirm();
   const { isAdmin } = useAuth();
   const [open, setOpen] = useState(false);
 
@@ -75,7 +77,7 @@ function ServicesPage() {
                   {s.is_builtin && <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Intégré</p>}
                 </div>
                 {isAdmin && !s.is_builtin && (
-                  <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive opacity-0 group-hover:opacity-100" onClick={() => { if (confirm("Supprimer ?")) del.mutate(s.id); }}><Trash2 className="h-3.5 w-3.5" /></Button>
+                  <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive opacity-0 group-hover:opacity-100" onClick={async () => { if (await confirmAction({ title: "Supprimer ce service ?", description: s.name, destructive: true, confirmLabel: "Supprimer" })) del.mutate(s.id); }}><Trash2 className="h-3.5 w-3.5" /></Button>
                 )}
               </div>
               {s.description && <p className="text-sm text-muted-foreground mt-3 line-clamp-2">{s.description}</p>}

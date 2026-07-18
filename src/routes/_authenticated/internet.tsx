@@ -8,10 +8,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
-import { Plus, Trash2, Pencil } from "lucide-react";
+import { Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { computeExpiration, formatMoney } from "@/lib/hexaro";
 import { MoovLogo } from "@/components/brand-logos";
+import { useConfirm } from "@/components/confirm-provider";
 
 export const Route = createFileRoute("/_authenticated/internet")({
   head: () => ({ meta: [{ title: "Internet — Hexaro" }] }),
@@ -20,6 +21,7 @@ export const Route = createFileRoute("/_authenticated/internet")({
 
 function InternetPage() {
   const qc = useQueryClient();
+  const confirmAction = useConfirm();
   const [open, setOpen] = useState<{ sub?: any } | null>(null);
 
   const { data: subs = [] } = useQuery({
@@ -81,7 +83,12 @@ function InternetPage() {
           {subs.map((s) => {
             const exp = computeExpiration(s.start_date, s.duration_days);
             return (
-              <div key={s.id} className="hex-glass rounded-2xl p-5 group">
+              <button
+                key={s.id}
+                type="button"
+                onClick={() => setOpen({ sub: s })}
+                className="text-left hex-glass rounded-2xl p-5 group hover:border-brand/50 transition cursor-pointer"
+              >
                 <div className="flex items-start justify-between mb-3">
                   <MoovLogo className="h-6 w-auto" />
                   <StatusPill tone={exp.tone}>{exp.label}</StatusPill>
@@ -92,11 +99,20 @@ function InternetPage() {
                   <p>N° SIM : <span className="text-foreground font-mono">{s.sim_number ?? "—"}</span></p>
                   <p>{s.duration_days} jours · {formatMoney(s.price)}</p>
                 </div>
-                <div className="mt-3 flex gap-1 opacity-0 group-hover:opacity-100 transition">
-                  <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => setOpen({ sub: s })}><Pencil className="h-3 w-3" /></Button>
-                  <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive" onClick={() => { if (confirm("Supprimer ?")) del.mutate(s.id); }}><Trash2 className="h-3 w-3" /></Button>
+                <div className="mt-3 flex justify-end">
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="h-7 w-7 text-destructive opacity-0 group-hover:opacity-100 transition"
+                    onClick={async (e) => {
+                      e.stopPropagation();
+                      if (await confirmAction({ title: "Supprimer l'abonnement ?", description: `L'abonnement de « ${s.client_name} » sera définitivement supprimé.`, destructive: true, confirmLabel: "Supprimer" })) del.mutate(s.id);
+                    }}
+                  >
+                    <Trash2 className="h-3 w-3" />
+                  </Button>
                 </div>
-              </div>
+              </button>
             );
           })}
         </div>

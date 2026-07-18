@@ -8,10 +8,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Plus, ChevronDown, Trash2, Pencil, Eye, EyeOff } from "lucide-react";
+import { Plus, ChevronDown, Trash2, Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
 import { computeExpiration, formatMoney } from "@/lib/hexaro";
 import { NetflixLogo } from "@/components/brand-logos";
+import { useConfirm } from "@/components/confirm-provider";
 
 export const Route = createFileRoute("/_authenticated/netflix")({
   head: () => ({ meta: [{ title: "Netflix — Hexaro" }] }),
@@ -20,6 +21,7 @@ export const Route = createFileRoute("/_authenticated/netflix")({
 
 function NetflixPage() {
   const qc = useQueryClient();
+  const confirmAction = useConfirm();
   const [openAcc, setOpenAcc] = useState(false);
   const [openProfile, setOpenProfile] = useState<{ accountId: string; profile?: any } | null>(null);
 
@@ -108,9 +110,13 @@ function NetflixPage() {
                 key={acc.id}
                 acc={acc}
                 accProfiles={accProfiles}
-                onDelete={() => { if (confirm("Supprimer ce compte et tous ses profils ?")) delAcc.mutate(acc.id); }}
+                onDelete={async () => {
+                  if (await confirmAction({ title: "Supprimer ce compte ?", description: `Le compte ${acc.email} et ses ${accProfiles.length} profil(s) seront définitivement supprimés.`, destructive: true, confirmLabel: "Supprimer" })) delAcc.mutate(acc.id);
+                }}
                 onEditProfile={(p: any) => setOpenProfile({ accountId: acc.id, profile: p })}
-                onDeleteProfile={(id: string) => { if (confirm("Supprimer ce profil ?")) delProfile.mutate(id); }}
+                onDeleteProfile={async (id: string, name: string) => {
+                  if (await confirmAction({ title: "Supprimer ce profil ?", description: `Le profil « ${name} » sera définitivement supprimé.`, destructive: true, confirmLabel: "Supprimer" })) delProfile.mutate(id);
+                }}
                 onNewProfile={() => setOpenProfile({ accountId: acc.id })}
               />
             );
@@ -164,7 +170,12 @@ function AccountCard({ acc, accProfiles, onDelete, onEditProfile, onDeleteProfil
           {accProfiles.map((p: any) => {
             const exp = computeExpiration(p.start_date, p.duration_days);
             return (
-              <div key={p.id} className="rounded-xl border border-border bg-background/40 p-4 group">
+              <button
+                key={p.id}
+                type="button"
+                onClick={() => onEditProfile(p)}
+                className="text-left rounded-xl border border-border bg-background/40 p-4 group hover:border-brand/50 hover:bg-background/60 transition cursor-pointer"
+              >
                 <div className="flex items-start justify-between">
                   <div>
                     <p className="font-semibold">{p.profile_name}</p>
@@ -172,12 +183,18 @@ function AccountCard({ acc, accProfiles, onDelete, onEditProfile, onDeleteProfil
                   </div>
                   <StatusPill tone={exp.tone}>{exp.label}</StatusPill>
                 </div>
-                <p className="text-xs text-muted-foreground mt-3">{formatMoney(p.price)} · {p.duration_days}j</p>
-                <div className="mt-3 flex gap-1 opacity-0 group-hover:opacity-100 transition">
-                  <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => onEditProfile(p)}><Pencil className="h-3 w-3" /></Button>
-                  <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive" onClick={() => onDeleteProfile(p.id)}><Trash2 className="h-3 w-3" /></Button>
+                <div className="mt-3 flex items-center justify-between">
+                  <p className="text-xs text-muted-foreground">{formatMoney(p.price)} · {p.duration_days}j</p>
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="h-7 w-7 text-destructive opacity-0 group-hover:opacity-100 transition"
+                    onClick={(e) => { e.stopPropagation(); onDeleteProfile(p.id, p.profile_name); }}
+                  >
+                    <Trash2 className="h-3 w-3" />
+                  </Button>
                 </div>
-              </div>
+              </button>
             );
           })}
         </div>

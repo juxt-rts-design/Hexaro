@@ -13,6 +13,7 @@ import { toast } from "sonner";
 import { formatDateTime } from "@/lib/hexaro";
 import { useAuth } from "@/hooks/useAuth";
 import { Navigate } from "@tanstack/react-router";
+import { useConfirm } from "@/components/confirm-provider";
 
 export const Route = createFileRoute("/_authenticated/team")({
   head: () => ({ meta: [{ title: "Équipe — Hexaro" }] }),
@@ -22,6 +23,7 @@ export const Route = createFileRoute("/_authenticated/team")({
 function TeamPage() {
   const { isAdmin, loading } = useAuth();
   const qc = useQueryClient();
+  const confirmAction = useConfirm();
   const fetchTeam = useServerFn(listTeam);
   const createMgr = useServerFn(createManager);
   const removeMember = useServerFn(deleteTeamMember);
@@ -92,7 +94,7 @@ function TeamPage() {
                     <td className="px-5 py-3 hidden lg:table-cell text-muted-foreground">{formatDateTime(m.created_at)}</td>
                     <td className="px-5 py-3 text-right">
                       {!isAdm && (
-                        <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive" onClick={() => { if (confirm("Supprimer ce membre ?")) del.mutate(m.id); }}>
+                        <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive" onClick={async () => { if (await confirmAction({ title: "Supprimer ce membre ?", description: m.email, destructive: true, confirmLabel: "Supprimer" })) del.mutate(m.id); }}>
                           <Trash2 className="h-3.5 w-3.5" />
                         </Button>
                       )}

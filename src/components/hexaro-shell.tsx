@@ -40,6 +40,7 @@ const ADMIN_NAV = [{ to: "/team", label: "Équipe", icon: UserCog }] as const;
 
 export function HexaroShell({ children }: { children: ReactNode }) {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [desktopOpen, setDesktopOpen] = useState(true);
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const { user, isAdmin, roles } = useAuth();
   const navigate = useNavigate();
@@ -59,7 +60,12 @@ export function HexaroShell({ children }: { children: ReactNode }) {
   return (
     <div className="min-h-screen w-full text-foreground">
       {/* Desktop sidebar */}
-      <aside className="hidden lg:flex fixed inset-y-0 left-0 z-30 w-64 flex-col border-r border-sidebar-border bg-sidebar/70 backdrop-blur-xl">
+      <aside
+        className={cn(
+          "hidden lg:flex fixed inset-y-0 left-0 z-30 w-64 flex-col border-r border-sidebar-border bg-sidebar/70 backdrop-blur-xl transition-transform duration-300",
+          desktopOpen ? "translate-x-0" : "-translate-x-full"
+        )}
+      >
         <div className="flex h-16 items-center px-5 border-b border-sidebar-border">
           <HexaroLogo />
         </div>
@@ -79,9 +85,24 @@ export function HexaroShell({ children }: { children: ReactNode }) {
       </Sheet>
 
       {/* Main */}
-      <div className="lg:pl-64">
+      <div className={cn("transition-[padding] duration-300", desktopOpen ? "lg:pl-64" : "lg:pl-0")}>
         <header className="sticky top-0 z-20 flex h-16 items-center gap-3 border-b border-border bg-background/70 backdrop-blur-xl px-4 sm:px-6">
-          <Button variant="ghost" size="icon" className="lg:hidden" onClick={() => setMobileOpen(true)} aria-label="Ouvrir le menu">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="lg:hidden"
+            onClick={() => setMobileOpen(true)}
+            aria-label="Ouvrir le menu"
+          >
+            <Menu className="h-5 w-5" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="hidden lg:inline-flex"
+            onClick={() => setDesktopOpen((v) => !v)}
+            aria-label="Basculer le menu"
+          >
             <Menu className="h-5 w-5" />
           </Button>
           <div className="relative flex-1 max-w-md">
