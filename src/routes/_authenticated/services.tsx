@@ -12,6 +12,7 @@ import { Plus, Package, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { formatMoney } from "@/lib/hexaro";
 import { useAuth } from "@/hooks/useAuth";
+import { useConfirm } from "@/components/confirm-provider";
 
 export const Route = createFileRoute("/_authenticated/services")({
   head: () => ({ meta: [{ title: "Services — Hexaro" }] }),
