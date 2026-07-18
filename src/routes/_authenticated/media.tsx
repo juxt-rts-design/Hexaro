@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Upload, Download, Trash2, FileText, Image as ImageIcon, Video, File as FileIcon, FolderPlus } from "lucide-react";
 import { toast } from "sonner";
+import { useConfirm } from "@/components/confirm-provider";
 
 export const Route = createFileRoute("/_authenticated/media")({
   head: () => ({ meta: [{ title: "Médias — Hexaro" }] }),
