@@ -18,6 +18,7 @@ const FOLDERS = ["affiches", "videos", "fiches", "documents"] as const;
 
 function MediaPage() {
   const qc = useQueryClient();
+  const confirmAction = useConfirm();
   const [folder, setFolder] = useState<string>("affiches");
   const [search, setSearch] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
