@@ -107,9 +107,13 @@ function SpotifyPage() {
                 key={acc.id}
                 acc={acc}
                 list={list}
-                onDelete={() => { if (confirm("Supprimer ce compte et tous ses membres ?")) delAcc.mutate(acc.id); }}
+                onDelete={async () => {
+                  if (await confirmAction({ title: "Supprimer ce compte ?", description: `${acc.email} et ses ${list.length} membre(s) seront définitivement supprimés.`, destructive: true, confirmLabel: "Supprimer" })) delAcc.mutate(acc.id);
+                }}
                 onEditMember={(m: any) => setOpenMember({ accountId: acc.id, member: m })}
-                onDeleteMember={(id: string) => { if (confirm("Supprimer ce membre ?")) delMember.mutate(id); }}
+                onDeleteMember={async (id: string, name: string) => {
+                  if (await confirmAction({ title: "Supprimer ce membre ?", description: `« ${name} » sera définitivement supprimé.`, destructive: true, confirmLabel: "Supprimer" })) delMember.mutate(id);
+                }}
                 onNewMember={() => setOpenMember({ accountId: acc.id })}
               />
             );
