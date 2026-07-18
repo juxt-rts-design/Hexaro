@@ -21,6 +21,7 @@ export const Route = createFileRoute("/_authenticated/netflix")({
 
 function NetflixPage() {
   const qc = useQueryClient();
+  const confirmAction = useConfirm();
   const [openAcc, setOpenAcc] = useState(false);
   const [openProfile, setOpenProfile] = useState<{ accountId: string; profile?: any } | null>(null);
 
