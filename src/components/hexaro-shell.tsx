@@ -114,9 +114,14 @@ export function HexaroShell({ children }: { children: ReactNode }) {
               className="w-full h-9 rounded-lg bg-muted/40 border border-border pl-9 pr-3 text-sm outline-none focus:border-brand transition"
             />
           </div>
-          <Button variant="ghost" size="icon" aria-label="Notifications">
-            <Bell className="h-5 w-5" />
-          </Button>
+          <NotificationsBell />
+          <Link to="/profile" className="ml-1">
+            <Avatar className="h-8 w-8 border border-border hover:border-brand transition cursor-pointer">
+              <AvatarFallback className="bg-brand-soft text-brand-foreground text-xs font-semibold">
+                {initials(user?.user_metadata?.full_name ?? user?.email ?? "")}
+              </AvatarFallback>
+            </Avatar>
+          </Link>
         </header>
         <main className="p-4 sm:p-6 lg:p-8 max-w-[1600px] mx-auto">{children}</main>
       </div>
