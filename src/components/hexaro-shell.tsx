@@ -12,8 +12,8 @@ import {
   FileBarChart,
   LogOut,
   Menu,
-  Bell,
   Search,
+  User,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -24,6 +24,7 @@ import { HexaroLogo } from "@/components/hexaro-logo";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { initials } from "@/lib/hexaro";
 import { toast } from "sonner";
+import { NotificationsBell } from "@/components/notifications-bell";
 
 const NAV = [
   { to: "/dashboard", label: "Tableau de bord", icon: LayoutDashboard },
