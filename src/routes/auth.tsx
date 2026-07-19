@@ -26,8 +26,10 @@ export const Route = createFileRoute("/auth")({
 function AuthPage() {
   const navigate = useNavigate();
   const seed = useServerFn(ensureAdminSeeded);
+  const notify = useServerFn(notifySignIn);
   const [email, setEmail] = useState("hexaro@gmail.com");
   const [password, setPassword] = useState("");
+  const [showPwd, setShowPwd] = useState(false);
   const [busy, setBusy] = useState(false);
   const [googleBusy, setGoogleBusy] = useState(false);
 
@@ -49,6 +51,7 @@ function AuthPage() {
       return;
     }
     toast.success("Bienvenue sur Hexaro");
+    notify().catch(() => {});
     navigate({ to: "/dashboard", replace: true });
   }
 
