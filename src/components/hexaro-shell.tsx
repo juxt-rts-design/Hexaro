@@ -170,17 +170,18 @@ function NavLink({ to, icon: Icon, label, active, onNavigate }: { to: string; ic
 function UserFooter({ displayName, email, roles, onSignOut }: { displayName: string; email: string; roles: string[]; onSignOut: () => void }) {
   return (
     <div className="border-t border-sidebar-border p-3">
-      <div className="flex items-center gap-3 px-2 py-2">
-        <Avatar className="h-9 w-9 border border-sidebar-border">
+      <Link to="/profile" className="flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-sidebar-accent/50 transition group">
+        <Avatar className="h-9 w-9 border border-sidebar-border group-hover:border-brand transition">
           <AvatarFallback className="bg-brand-soft text-brand-foreground text-xs font-semibold">{initials(displayName || email)}</AvatarFallback>
         </Avatar>
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-medium truncate">{displayName || "Utilisateur"}</p>
+          <p className="text-sm font-medium truncate group-hover:text-brand transition">{displayName || "Utilisateur"}</p>
           <p className="text-[11px] text-muted-foreground truncate">
             {roles.length ? roles.map((r) => (r === "admin" ? "Administrateur" : "Manager")).join(" · ") : email}
           </p>
         </div>
-      </div>
+        <User className="h-4 w-4 text-muted-foreground group-hover:text-brand shrink-0" />
+      </Link>
       <Button variant="ghost" size="sm" className="w-full justify-start gap-2 mt-1 text-muted-foreground hover:text-foreground" onClick={onSignOut}>
         <LogOut className="h-4 w-4" />
         Déconnexion
