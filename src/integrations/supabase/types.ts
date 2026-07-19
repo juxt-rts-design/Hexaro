@@ -287,6 +287,39 @@ export type Database = {
           },
         ]
       }
+      notifications: {
+        Row: {
+          body: string | null
+          created_at: string
+          id: string
+          meta: Json
+          read_at: string | null
+          recipient_id: string | null
+          title: string
+          type: string
+        }
+        Insert: {
+          body?: string | null
+          created_at?: string
+          id?: string
+          meta?: Json
+          read_at?: string | null
+          recipient_id?: string | null
+          title: string
+          type: string
+        }
+        Update: {
+          body?: string | null
+          created_at?: string
+          id?: string
+          meta?: Json
+          read_at?: string | null
+          recipient_id?: string | null
+          title?: string
+          type?: string
+        }
+        Relationships: []
+      }
       payments: {
         Row: {
           amount: number
@@ -331,26 +364,32 @@ export type Database = {
       profiles: {
         Row: {
           avatar_url: string | null
+          bio: string | null
           created_at: string
           full_name: string | null
           id: string
           phone: string | null
+          settings: Json
           updated_at: string
         }
         Insert: {
           avatar_url?: string | null
+          bio?: string | null
           created_at?: string
           full_name?: string | null
           id: string
           phone?: string | null
+          settings?: Json
           updated_at?: string
         }
         Update: {
           avatar_url?: string | null
+          bio?: string | null
           created_at?: string
           full_name?: string | null
           id?: string
           phone?: string | null
+          settings?: Json
           updated_at?: string
         }
         Relationships: []
