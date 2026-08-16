@@ -16,11 +16,13 @@ import { Route as AuthenticatedTeamRouteImport } from './routes/_authenticated/t
 import { Route as AuthenticatedSpotifyRouteImport } from './routes/_authenticated/spotify'
 import { Route as AuthenticatedServicesRouteImport } from './routes/_authenticated/services'
 import { Route as AuthenticatedReportsRouteImport } from './routes/_authenticated/reports'
+import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as AuthenticatedNetflixRouteImport } from './routes/_authenticated/netflix'
 import { Route as AuthenticatedMediaRouteImport } from './routes/_authenticated/media'
 import { Route as AuthenticatedInternetRouteImport } from './routes/_authenticated/internet'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedActivityRouteImport } from './routes/_authenticated/activity'
+import { Route as AuthenticatedSSlugRouteImport } from './routes/_authenticated/s.$slug'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
@@ -56,6 +58,11 @@ const AuthenticatedReportsRoute = AuthenticatedReportsRouteImport.update({
   path: '/reports',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedProfileRoute = AuthenticatedProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedNetflixRoute = AuthenticatedNetflixRouteImport.update({
   id: '/netflix',
   path: '/netflix',
@@ -81,6 +88,11 @@ const AuthenticatedActivityRoute = AuthenticatedActivityRouteImport.update({
   path: '/activity',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedSSlugRoute = AuthenticatedSSlugRouteImport.update({
+  id: '/s/$slug',
+  path: '/s/$slug',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -90,10 +102,12 @@ export interface FileRoutesByFullPath {
   '/internet': typeof AuthenticatedInternetRoute
   '/media': typeof AuthenticatedMediaRoute
   '/netflix': typeof AuthenticatedNetflixRoute
+  '/profile': typeof AuthenticatedProfileRoute
   '/reports': typeof AuthenticatedReportsRoute
   '/services': typeof AuthenticatedServicesRoute
   '/spotify': typeof AuthenticatedSpotifyRoute
   '/team': typeof AuthenticatedTeamRoute
+  '/s/$slug': typeof AuthenticatedSSlugRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -103,10 +117,12 @@ export interface FileRoutesByTo {
   '/internet': typeof AuthenticatedInternetRoute
   '/media': typeof AuthenticatedMediaRoute
   '/netflix': typeof AuthenticatedNetflixRoute
+  '/profile': typeof AuthenticatedProfileRoute
   '/reports': typeof AuthenticatedReportsRoute
   '/services': typeof AuthenticatedServicesRoute
   '/spotify': typeof AuthenticatedSpotifyRoute
   '/team': typeof AuthenticatedTeamRoute
+  '/s/$slug': typeof AuthenticatedSSlugRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -118,10 +134,12 @@ export interface FileRoutesById {
   '/_authenticated/internet': typeof AuthenticatedInternetRoute
   '/_authenticated/media': typeof AuthenticatedMediaRoute
   '/_authenticated/netflix': typeof AuthenticatedNetflixRoute
+  '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/_authenticated/reports': typeof AuthenticatedReportsRoute
   '/_authenticated/services': typeof AuthenticatedServicesRoute
   '/_authenticated/spotify': typeof AuthenticatedSpotifyRoute
   '/_authenticated/team': typeof AuthenticatedTeamRoute
+  '/_authenticated/s/$slug': typeof AuthenticatedSSlugRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -133,10 +151,12 @@ export interface FileRouteTypes {
     | '/internet'
     | '/media'
     | '/netflix'
+    | '/profile'
     | '/reports'
     | '/services'
     | '/spotify'
     | '/team'
+    | '/s/$slug'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -146,10 +166,12 @@ export interface FileRouteTypes {
     | '/internet'
     | '/media'
     | '/netflix'
+    | '/profile'
     | '/reports'
     | '/services'
     | '/spotify'
     | '/team'
+    | '/s/$slug'
   id:
     | '__root__'
     | '/'
@@ -160,10 +182,12 @@ export interface FileRouteTypes {
     | '/_authenticated/internet'
     | '/_authenticated/media'
     | '/_authenticated/netflix'
+    | '/_authenticated/profile'
     | '/_authenticated/reports'
     | '/_authenticated/services'
     | '/_authenticated/spotify'
     | '/_authenticated/team'
+    | '/_authenticated/s/$slug'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -223,6 +247,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedReportsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/profile': {
+      id: '/_authenticated/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof AuthenticatedProfileRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/netflix': {
       id: '/_authenticated/netflix'
       path: '/netflix'
@@ -258,6 +289,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedActivityRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/s/$slug': {
+      id: '/_authenticated/s/$slug'
+      path: '/s/$slug'
+      fullPath: '/s/$slug'
+      preLoaderRoute: typeof AuthenticatedSSlugRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
@@ -267,10 +305,12 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedInternetRoute: typeof AuthenticatedInternetRoute
   AuthenticatedMediaRoute: typeof AuthenticatedMediaRoute
   AuthenticatedNetflixRoute: typeof AuthenticatedNetflixRoute
+  AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
   AuthenticatedReportsRoute: typeof AuthenticatedReportsRoute
   AuthenticatedServicesRoute: typeof AuthenticatedServicesRoute
   AuthenticatedSpotifyRoute: typeof AuthenticatedSpotifyRoute
   AuthenticatedTeamRoute: typeof AuthenticatedTeamRoute
+  AuthenticatedSSlugRoute: typeof AuthenticatedSSlugRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -279,10 +319,12 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedInternetRoute: AuthenticatedInternetRoute,
   AuthenticatedMediaRoute: AuthenticatedMediaRoute,
   AuthenticatedNetflixRoute: AuthenticatedNetflixRoute,
+  AuthenticatedProfileRoute: AuthenticatedProfileRoute,
   AuthenticatedReportsRoute: AuthenticatedReportsRoute,
   AuthenticatedServicesRoute: AuthenticatedServicesRoute,
   AuthenticatedSpotifyRoute: AuthenticatedSpotifyRoute,
   AuthenticatedTeamRoute: AuthenticatedTeamRoute,
+  AuthenticatedSSlugRoute: AuthenticatedSSlugRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
@@ -296,3 +338,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

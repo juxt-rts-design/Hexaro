@@ -38,6 +38,11 @@ export function computeExpiration(startDate: string | Date | null | undefined, d
   return { expiresAt, msRemaining, days, hours, minutes, status, label, tone };
 }
 
+/** Du plus proche de l'expiration (ou déjà expiré) au plus de jours restants. */
+export function bySoonestExpiry<T extends { start_date?: string | null; duration_days?: number | null }>(a: T, b: T) {
+  return computeExpiration(a.start_date, a.duration_days).msRemaining - computeExpiration(b.start_date, b.duration_days).msRemaining;
+}
+
 export function formatMoney(n: number | string | null | undefined): string {
   const num = typeof n === "string" ? parseFloat(n) : (n ?? 0);
   return new Intl.NumberFormat("fr-FR", { maximumFractionDigits: 0 }).format(num) + " F";

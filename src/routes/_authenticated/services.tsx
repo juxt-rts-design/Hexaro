@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link, Navigate } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -11,8 +11,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { Plus, Package, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { formatMoney } from "@/lib/hexaro";
-import { useAuth } from "@/hooks/useAuth";
 import { useConfirm } from "@/components/confirm-provider";
+import { servicePath, fetchServices } from "@/lib/services";
+import { useAuth } from "@/hooks/useAuth";
 
 export const Route = createFileRoute("/_authenticated/services")({
   head: () => ({ meta: [{ title: "Services — Hexaro" }] }),
@@ -20,14 +21,14 @@ export const Route = createFileRoute("/_authenticated/services")({
 });
 
 function ServicesPage() {
+  const { isAdmin, loading } = useAuth();
   const qc = useQueryClient();
   const confirmAction = useConfirm();
-  const { isAdmin } = useAuth();
   const [open, setOpen] = useState(false);
 
-  const { data: services = [] } = useQuery({
+  const { data: services = [], isPending } = useQuery({
     queryKey: ["services"],
-    queryFn: async () => (await supabase.from("services").select("*").order("name")).data ?? [],
+    queryFn: fetchServices,
   });
 
   const create = useMutation({
@@ -50,34 +51,42 @@ function ServicesPage() {
     onError: (e: any) => toast.error(e.message),
   });
 
+  if (loading) return null;
+  if (!isAdmin) return <Navigate to="/dashboard" />;
+
   return (
     <div className="space-y-6">
       <PageHeader
         title="Services"
         description="Netflix, Spotify, Internet et vos futurs services numériques (Canva, ChatGPT, Disney+, VPN…)."
-        actions={isAdmin && (
+        actions={
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild><Button className="bg-brand text-brand-foreground gap-2"><Plus className="h-4 w-4" /> Nouveau service</Button></DialogTrigger>
             <ServiceForm onSubmit={(v: any) => create.mutate(v)} submitting={create.isPending} />
           </Dialog>
-        )}
+        }
       />
-      {services.length === 0 ? (
+      {isPending ? null : services.length === 0 ? (
         <EmptyState title="Aucun service" />
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {services.map((s) => (
-            <div key={s.id} className="hex-glass rounded-2xl p-5 group">
+            <Link
+              key={s.id}
+              to={s.is_builtin ? (servicePath(s.slug) as "/netflix") : "/s/$slug"}
+              params={s.is_builtin ? undefined : { slug: s.slug }}
+              className="hex-glass rounded-2xl p-5 group block hover:border-brand/50 transition"
+            >
               <div className="flex items-start gap-3">
-                <div className="h-11 w-11 rounded-xl grid place-items-center" style={{ backgroundColor: `color-mix(in oklab, ${s.color ?? "var(--brand)"} 20%, transparent)`, color: s.color ?? "var(--brand)" }}>
+                <div className="h-11 w-11 rounded-xl grid place-items-center bg-brand-soft text-brand">
                   <Package className="h-5 w-5" />
                 </div>
                 <div className="flex-1">
                   <p className="font-semibold">{s.name}</p>
                   {s.is_builtin && <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Intégré</p>}
                 </div>
-                {isAdmin && !s.is_builtin && (
-                  <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive opacity-0 group-hover:opacity-100" onClick={async () => { if (await confirmAction({ title: "Supprimer ce service ?", description: s.name, destructive: true, confirmLabel: "Supprimer" })) del.mutate(s.id); }}><Trash2 className="h-3.5 w-3.5" /></Button>
+                {!s.is_builtin && (
+                  <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive opacity-0 group-hover:opacity-100" onClick={async (e) => { e.preventDefault(); e.stopPropagation(); if (await confirmAction({ title: "Supprimer ce service ?", description: s.name, destructive: true, confirmLabel: "Supprimer" })) del.mutate(s.id); }}><Trash2 className="h-3.5 w-3.5" /></Button>
                 )}
               </div>
               {s.description && <p className="text-sm text-muted-foreground mt-3 line-clamp-2">{s.description}</p>}
@@ -85,7 +94,7 @@ function ServicesPage() {
                 <span className="text-muted-foreground">{s.default_duration_days} jours</span>
                 <span className="font-semibold hex-gradient-text">{formatMoney(s.default_price)}</span>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
       )}
@@ -103,7 +112,7 @@ function ServiceForm({ onSubmit, submitting }: any) {
         <div className="space-y-2"><Label>Description</Label><Textarea value={v.description} onChange={(e) => setV({ ...v, description: e.target.value })} rows={3} /></div>
         <div className="grid grid-cols-2 gap-3">
           <div className="space-y-2"><Label>Durée par défaut (j)</Label><Input type="number" min="1" value={v.default_duration_days} onChange={(e) => setV({ ...v, default_duration_days: e.target.value })} /></div>
-          <div className="space-y-2"><Label>Prix par défaut</Label><Input type="number" min="0" value={v.default_price} onChange={(e) => setV({ ...v, default_price: e.target.value })} /></div>
+          <div className="space-y-2"><Label>Montant / revenu par défaut (F)</Label><Input type="number" min="0" value={v.default_price} onChange={(e) => setV({ ...v, default_price: e.target.value })} /></div>
         </div>
         <DialogFooter><Button type="submit" disabled={submitting} className="bg-brand text-brand-foreground">{submitting ? "…" : "Créer"}</Button></DialogFooter>
       </form>

@@ -7,6 +7,7 @@ import {
   Scripts,
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
+import { emitSignInNotice } from "@/lib/emit-signin";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
@@ -73,7 +74,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   head: () => ({
     meta: [
       { charSet: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1" },
+      { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-visual" },
       { title: "Hexaro — Gestion d'abonnements numériques" },
       {
         name: "description",
@@ -116,10 +117,13 @@ function RootComponent() {
   const router = useRouter();
 
   useEffect(() => {
-    const { data: sub } = supabase.auth.onAuthStateChange((event) => {
+    const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
       if (event !== "SIGNED_IN" && event !== "SIGNED_OUT" && event !== "USER_UPDATED") return;
       router.invalidate();
       if (event !== "SIGNED_OUT") queryClient.invalidateQueries();
+      if (event === "SIGNED_IN" && session?.user) {
+        emitSignInNotice(session.user).catch(() => {});
+      }
     });
     return () => sub.subscription.unsubscribe();
   }, [router, queryClient]);
@@ -128,7 +132,7 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <ConfirmProvider>
         <Outlet />
-        <Toaster richColors position="top-right" />
+        <Toaster richColors position="top-right" visibleToasts={3} duration={4500} expand={false} />
       </ConfirmProvider>
     </QueryClientProvider>
   );

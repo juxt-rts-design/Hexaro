@@ -23,19 +23,46 @@ export function StatCard({
     warning: "text-warning",
     destructive: "text-destructive",
   };
+  const iconTone: Record<string, string> = {
+    default: "text-muted-foreground",
+    brand: "text-brand",
+    success: "text-success",
+    warning: "text-warning",
+    destructive: "text-destructive",
+  };
   return (
-    <div className={cn("hex-glass rounded-2xl p-5 relative overflow-hidden group transition-all hover:border-brand/40", className)}>
-      <div className="flex items-center justify-between mb-3">
-        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{label}</p>
-        {Icon && (
-          <div className="h-8 w-8 rounded-lg bg-muted/50 grid place-items-center">
-            <Icon className="h-4 w-4 text-muted-foreground" />
-          </div>
-        )}
+    <div className={cn("hex-glass rounded-2xl p-5 relative overflow-hidden transition-all hover:border-brand/40", className)}>
+      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3">{label}</p>
+      <div className="flex items-center gap-2.5">
+        {Icon && <Icon className={cn("h-5 w-5 shrink-0", iconTone[tone])} />}
+        <p className={cn("text-2xl sm:text-3xl font-bold tracking-tight", toneStyle[tone])}>{value}</p>
       </div>
-      <p className={cn("text-3xl font-bold tracking-tight", toneStyle[tone])}>{value}</p>
       {hint && <p className="text-xs text-muted-foreground mt-2">{hint}</p>}
     </div>
+  );
+}
+
+export function IconStat({
+  icon: Icon,
+  tone = "muted",
+  children,
+}: {
+  icon: any;
+  tone?: "muted" | "brand" | "success" | "warning" | "destructive";
+  children: ReactNode;
+}) {
+  const map: Record<string, string> = {
+    muted: "text-muted-foreground",
+    brand: "text-brand",
+    success: "text-success",
+    warning: "text-warning",
+    destructive: "text-destructive",
+  };
+  return (
+    <span className="inline-flex items-center gap-1.5">
+      <Icon className={cn("h-3.5 w-3.5", map[tone])} />
+      {children}
+    </span>
   );
 }
 

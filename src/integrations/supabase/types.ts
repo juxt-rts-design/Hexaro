@@ -128,6 +128,7 @@ export type Database = {
           client_name: string
           created_at: string
           duration_days: number
+          expires_at: string | null
           forfait_id: string | null
           id: string
           notes: string | null
@@ -144,6 +145,7 @@ export type Database = {
           client_name: string
           created_at?: string
           duration_days?: number
+          expires_at?: string | null
           forfait_id?: string | null
           id?: string
           notes?: string | null
@@ -160,6 +162,7 @@ export type Database = {
           client_name?: string
           created_at?: string
           duration_days?: number
+          expires_at?: string | null
           forfait_id?: string | null
           id?: string
           notes?: string | null
@@ -233,8 +236,10 @@ export type Database = {
           client_id: string | null
           created_at: string
           duration_days: number
+          expires_at: string | null
           id: string
           pin: string | null
+          avatar: string | null
           price: number
           profile_name: string
           pseudo: string | null
@@ -247,8 +252,10 @@ export type Database = {
           client_id?: string | null
           created_at?: string
           duration_days?: number
+          expires_at?: string | null
           id?: string
           pin?: string | null
+          avatar?: string | null
           price?: number
           profile_name: string
           pseudo?: string | null
@@ -261,8 +268,10 @@ export type Database = {
           client_id?: string | null
           created_at?: string
           duration_days?: number
+          expires_at?: string | null
           id?: string
           pin?: string | null
+          avatar?: string | null
           price?: number
           profile_name?: string
           pseudo?: string | null
@@ -287,36 +296,90 @@ export type Database = {
           },
         ]
       }
+      notifications: {
+        Row: {
+          body: string | null
+          created_at: string
+          id: string
+          meta: Json
+          read_at: string | null
+          recipient_id: string | null
+          title: string
+          type: string
+        }
+        Insert: {
+          body?: string | null
+          created_at?: string
+          id?: string
+          meta?: Json
+          read_at?: string | null
+          recipient_id?: string | null
+          title: string
+          type: string
+        }
+        Update: {
+          body?: string | null
+          created_at?: string
+          id?: string
+          meta?: Json
+          read_at?: string | null
+          recipient_id?: string | null
+          title?: string
+          type?: string
+        }
+        Relationships: []
+      }
       payments: {
         Row: {
           amount: number
           client_id: string | null
+          client_name: string | null
           created_at: string
           created_by: string | null
           id: string
+          kind: string
+          method: Database["public"]["Enums"]["payment_method"]
           paid_at: string
           reference: string | null
           service_slug: string
+          subscription_id: string | null
+          subscription_type: string | null
+          void_reason: string | null
+          voided_at: string | null
         }
         Insert: {
           amount: number
           client_id?: string | null
+          client_name?: string | null
           created_at?: string
           created_by?: string | null
           id?: string
+          kind?: string
+          method?: Database["public"]["Enums"]["payment_method"]
           paid_at?: string
           reference?: string | null
           service_slug: string
+          subscription_id?: string | null
+          subscription_type?: string | null
+          void_reason?: string | null
+          voided_at?: string | null
         }
         Update: {
           amount?: number
           client_id?: string | null
+          client_name?: string | null
           created_at?: string
           created_by?: string | null
           id?: string
+          kind?: string
+          method?: Database["public"]["Enums"]["payment_method"]
           paid_at?: string
           reference?: string | null
           service_slug?: string
+          subscription_id?: string | null
+          subscription_type?: string | null
+          void_reason?: string | null
+          voided_at?: string | null
         }
         Relationships: [
           {
@@ -331,27 +394,36 @@ export type Database = {
       profiles: {
         Row: {
           avatar_url: string | null
+          bio: string | null
           created_at: string
           full_name: string | null
           id: string
           phone: string | null
+          settings: Json
           updated_at: string
+          workspace_id: string | null
         }
         Insert: {
           avatar_url?: string | null
+          bio?: string | null
           created_at?: string
           full_name?: string | null
           id: string
           phone?: string | null
+          settings?: Json
           updated_at?: string
+          workspace_id?: string | null
         }
         Update: {
           avatar_url?: string | null
+          bio?: string | null
           created_at?: string
           full_name?: string | null
           id?: string
           phone?: string | null
+          settings?: Json
           updated_at?: string
+          workspace_id?: string | null
         }
         Relationships: []
       }
@@ -368,6 +440,7 @@ export type Database = {
           name: string
           slug: string
           updated_at: string
+          workspace_id: string | null
         }
         Insert: {
           color?: string | null
@@ -381,6 +454,7 @@ export type Database = {
           name: string
           slug: string
           updated_at?: string
+          workspace_id?: string | null
         }
         Update: {
           color?: string | null
@@ -436,6 +510,7 @@ export type Database = {
           client_id: string | null
           created_at: string
           duration_days: number
+          expires_at: string | null
           id: string
           member_email: string | null
           member_name: string
@@ -450,6 +525,7 @@ export type Database = {
           client_id?: string | null
           created_at?: string
           duration_days?: number
+          expires_at?: string | null
           id?: string
           member_email?: string | null
           member_name: string
@@ -464,6 +540,7 @@ export type Database = {
           client_id?: string | null
           created_at?: string
           duration_days?: number
+          expires_at?: string | null
           id?: string
           member_email?: string | null
           member_name?: string
@@ -489,6 +566,60 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      service_subscriptions: {
+        Row: {
+          account_email: string | null
+          account_password: string | null
+          client_name: string
+          created_at: string
+          duration_days: number
+          expires_at: string | null
+          id: string
+          notes: string | null
+          phone: string | null
+          price: number
+          service_id: string
+          start_date: string
+          status: Database["public"]["Enums"]["entity_status"]
+          updated_at: string
+          workspace_id: string
+        }
+        Insert: {
+          account_email?: string | null
+          account_password?: string | null
+          client_name: string
+          created_at?: string
+          duration_days?: number
+          expires_at?: string | null
+          id?: string
+          notes?: string | null
+          phone?: string | null
+          price?: number
+          service_id: string
+          start_date?: string
+          status?: Database["public"]["Enums"]["entity_status"]
+          updated_at?: string
+          workspace_id?: string
+        }
+        Update: {
+          account_email?: string | null
+          account_password?: string | null
+          client_name?: string
+          created_at?: string
+          duration_days?: number
+          expires_at?: string | null
+          id?: string
+          notes?: string | null
+          phone?: string | null
+          price?: number
+          service_id?: string
+          start_date?: string
+          status?: Database["public"]["Enums"]["entity_status"]
+          updated_at?: string
+          workspace_id?: string
+        }
+        Relationships: []
       }
       user_roles: {
         Row: {
@@ -516,6 +647,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_account_password: {
+        Args: { _id: string; _service: string }
+        Returns: string
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -528,6 +663,12 @@ export type Database = {
     Enums: {
       app_role: "admin" | "manager"
       entity_status: "active" | "suspended" | "expired" | "pending"
+      payment_method:
+        | "especes"
+        | "airtel_money"
+        | "moov_money"
+        | "virement"
+        | "autre"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -657,6 +798,13 @@ export const Constants = {
     Enums: {
       app_role: ["admin", "manager"],
       entity_status: ["active", "suspended", "expired", "pending"],
+      payment_method: [
+        "especes",
+        "airtel_money",
+        "moov_money",
+        "virement",
+        "autre",
+      ],
     },
   },
 } as const

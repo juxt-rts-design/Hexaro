@@ -2,16 +2,17 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable";
 import { ensureAdminSeeded } from "@/lib/admin-seed.functions";
+import { signUpAccount } from "@/lib/signup.functions";
 import { HexaroLogo } from "@/components/hexaro-logo";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { Loader2, Mail, Lock } from "lucide-react";
+import { Loader2, Mail, Lock, Eye, EyeOff, User } from "lucide-react";
 
 export const Route = createFileRoute("/auth")({
+  ssr: false,
   head: () => ({
     meta: [
       { title: "Connexion — Hexaro" },
@@ -25,12 +26,15 @@ export const Route = createFileRoute("/auth")({
 function AuthPage() {
   const navigate = useNavigate();
   const seed = useServerFn(ensureAdminSeeded);
-  const [email, setEmail] = useState("hexaro@gmail.com");
+  const register = useServerFn(signUpAccount);
+  const [mode, setMode] = useState<"login" | "signup">("login");
+  const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPwd, setShowPwd] = useState(false);
   const [busy, setBusy] = useState(false);
   const [googleBusy, setGoogleBusy] = useState(false);
 
-  // Seed admin idempotent + redirect if already logged in
   useEffect(() => {
     seed().catch(() => {});
     supabase.auth.getSession().then(({ data }) => {
@@ -38,31 +42,50 @@ function AuthPage() {
     });
   }, [seed, navigate]);
 
-  async function handleLogin(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setBusy(true);
-    const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
-    setBusy(false);
-    if (error) {
-      toast.error("Connexion refusée", { description: error.message });
-      return;
+    try {
+      if (mode === "signup") {
+        await register({
+          data: { email: email.trim(), password, full_name: fullName.trim() },
+        });
+      }
+      const { error } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password,
+      });
+      if (error) {
+        const banned = /banned|disabled|blocked/i.test(error.message);
+        toast.error(banned ? "Accès bloqué" : mode === "signup" ? "Compte créé, connexion refusée" : "Connexion refusée", {
+          description: banned
+            ? "Un administrateur a bloqué ce compte. Contactez-le pour rétablir l’accès."
+            : error.message,
+        });
+        return;
+      }
+      toast.success(mode === "signup" ? "Espace créé — bienvenue sur Hexaro" : "Bienvenue sur Hexaro");
+      navigate({ to: "/dashboard", replace: true });
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "Inscription impossible");
+    } finally {
+      setBusy(false);
     }
-    toast.success("Bienvenue sur Hexaro");
-    navigate({ to: "/dashboard", replace: true });
   }
 
   async function handleGoogle() {
     setGoogleBusy(true);
-    const result = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: window.location.origin,
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: `${window.location.origin}/auth`,
+        queryParams: { prompt: "select_account" },
+      },
     });
-    if (result.error) {
-      toast.error("Google indisponible", { description: String(result.error.message ?? result.error) });
+    if (error) {
+      toast.error("Google indisponible", { description: error.message });
       setGoogleBusy(false);
-      return;
     }
-    if (result.redirected) return;
-    navigate({ to: "/dashboard", replace: true });
   }
 
   async function handleReset() {
@@ -76,7 +99,6 @@ function AuthPage() {
 
   return (
     <div className="min-h-screen grid lg:grid-cols-2">
-      {/* Left panel — brand */}
       <div className="relative hidden lg:flex flex-col justify-between p-12 overflow-hidden border-r border-border">
         <div
           aria-hidden
@@ -107,39 +129,69 @@ function AuthPage() {
         <p className="text-xs text-muted-foreground">© {new Date().getFullYear()} Hexaro</p>
       </div>
 
-      {/* Right panel — form */}
       <div className="flex items-center justify-center p-6 sm:p-12">
         <div className="w-full max-w-md space-y-8">
           <div className="lg:hidden">
             <HexaroLogo size={36} />
           </div>
           <div>
-            <h2 className="text-2xl font-bold">Connexion à votre espace</h2>
-            <p className="text-sm text-muted-foreground mt-1">Réservé à l'équipe Hexaro.</p>
+            <h2 className="text-2xl font-bold">
+              {mode === "signup" ? "Créer votre espace" : "Connexion à votre espace"}
+            </h2>
+            <p className="text-sm text-muted-foreground mt-1">
+              {mode === "signup"
+                ? "Inscription gratuite. Vos données restent isolées dans votre compte."
+                : "Email, mot de passe ou Google — même compte à chaque fois."}
+            </p>
           </div>
 
-          <form onSubmit={handleLogin} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4" autoComplete="off">
+            {mode === "signup" && (
+              <div className="space-y-2">
+                <Label htmlFor="fullName">Nom</Label>
+                <div className="relative">
+                  <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input id="fullName" required minLength={2} value={fullName} onChange={(e) => setFullName(e.target.value)} className="pl-9 h-11" placeholder="Votre nom" />
+                </div>
+              </div>
+            )}
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input id="email" type="email" autoComplete="email" required value={email} onChange={(e) => setEmail(e.target.value)} className="pl-9 h-11" placeholder="vous@hexaro.com" />
+                <Input id="email" type="email" autoComplete="off" required value={email} onChange={(e) => setEmail(e.target.value)} className="pl-9 h-11" placeholder="vous@email.com" />
               </div>
             </div>
             <div className="space-y-2">
               <div className="flex justify-between">
                 <Label htmlFor="password">Mot de passe</Label>
-                <button type="button" onClick={handleReset} className="text-xs text-brand hover:underline">Mot de passe oublié ?</button>
+                {mode === "login" && (
+                  <button type="button" onClick={handleReset} className="text-xs text-brand hover:underline">Mot de passe oublié ?</button>
+                )}
               </div>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input id="password" type="password" autoComplete="current-password" required value={password} onChange={(e) => setPassword(e.target.value)} className="pl-9 h-11" placeholder="••••••••" />
+                <Input id="password" type={showPwd ? "text" : "password"} autoComplete={mode === "signup" ? "new-password" : "current-password"} required minLength={8} value={password} onChange={(e) => setPassword(e.target.value)} className="pl-9 pr-10 h-11" placeholder="••••••••" />
+                <button type="button" onClick={() => setShowPwd((v) => !v)} aria-label={showPwd ? "Masquer" : "Afficher"} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                  {showPwd ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
               </div>
             </div>
             <Button type="submit" disabled={busy} className="w-full h-11 bg-brand text-brand-foreground hover:opacity-90 hex-glow font-semibold">
-              {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : "Se connecter"}
+              {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : mode === "signup" ? "Créer mon espace" : "Se connecter"}
             </Button>
           </form>
+
+          <p className="text-sm text-center text-muted-foreground">
+            {mode === "signup" ? "Déjà un compte ?" : "Pas encore de compte ?"}{" "}
+            <button
+              type="button"
+              className="text-brand font-medium hover:underline"
+              onClick={() => setMode(mode === "signup" ? "login" : "signup")}
+            >
+              {mode === "signup" ? "Se connecter" : "Inscription"}
+            </button>
+          </p>
 
           <div className="relative">
             <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-border" /></div>
@@ -152,10 +204,6 @@ function AuthPage() {
             )}
             Continuer avec Google
           </Button>
-
-          <p className="text-xs text-center text-muted-foreground">
-            Un problème d'accès ? Contactez votre administrateur.
-          </p>
         </div>
       </div>
     </div>
