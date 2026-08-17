@@ -12,26 +12,33 @@ function isNewSupabaseApiKey(value: string): boolean {
 function createSupabaseFetch(supabaseKey: string): typeof fetch {
   return (input, init) => {
     const headers = new Headers(
-      typeof Request !== 'undefined' && input instanceof Request ? input.headers : undefined,
+      typeof Request !== "undefined" && input instanceof Request ? input.headers : undefined,
     );
 
     if (init?.headers) {
       new Headers(init.headers).forEach((value, key) => headers.set(key, value));
     }
 
-    // New Supabase API keys are opaque strings, not bearer JWTs.
-    if (isNewSupabaseApiKey(supabaseKey) && headers.get('Authorization') === `Bearer ${supabaseKey}`) {
-      headers.delete('Authorization');
+    if (isNewSupabaseApiKey(supabaseKey)) {
+      const auth = (headers.get("Authorization") ?? "").replace(/^Bearer\s+/i, "").trim();
+      if (!auth || auth === supabaseKey || auth.split(".").length !== 3) headers.delete("Authorization");
     }
 
-    headers.set('apikey', supabaseKey);
+    headers.set("apikey", supabaseKey);
+    if (typeof Request !== "undefined" && input instanceof Request) {
+      return fetch(new Request(input, { ...init, headers }));
+    }
     return fetch(input, { ...init, headers });
   };
 }
 
 function createSupabaseAdminClient() {
-  const SUPABASE_URL = process.env.SUPABASE_URL;
-  const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const SUPABASE_URL = String(process.env.SUPABASE_URL ?? "")
+    .trim()
+    .replace(/^["']|["']$/g, "");
+  const SUPABASE_SERVICE_ROLE_KEY = String(process.env.SUPABASE_SERVICE_ROLE_KEY ?? "")
+    .trim()
+    .replace(/^["']|["']$/g, "");
 
   if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
     const missing = [

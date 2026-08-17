@@ -19,6 +19,9 @@ function teamError(err: unknown, fallback = "Une erreur s’est produite.") {
   if (/Forbidden|not allowed/i.test(raw)) return "Cette action est réservée à l’administrateur.";
   if (/User not found|introuvable/i.test(raw)) return "Ce membre est introuvable.";
   if (/banned/i.test(raw)) return "Impossible de modifier un compte bloqué pour le moment.";
+  if (/invalid api key/i.test(raw)) {
+    return "Action administrateur indisponible pour le moment.";
+  }
   return /[àâéèêëîïôùûç]/i.test(raw) ? raw : fallback;
 }
 
@@ -34,8 +37,11 @@ export const listTeam = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     await assertAdmin(context.supabase, context.userId);
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data: roleRows } = await supabaseAdmin.from("user_roles").select("user_id, role");
+    const db = context.supabase;
+
+    const { data: roleRows, error: roleErr } = await db.from("user_roles").select("user_id, role");
+    if (roleErr) throw new Error(teamError(roleErr, "Impossible de charger l’équipe."));
+
     const rolesByUser = new Map<string, string[]>();
     for (const row of roleRows ?? []) {
       const list = rolesByUser.get(row.user_id) ?? [];
@@ -47,41 +53,66 @@ export const listTeam = createServerFn({ method: "GET" })
       .map(([id]) => id);
     if (staffIds.length === 0) return [];
 
-    const { data: usersPage } = await supabaseAdmin.auth.admin.listUsers({ page: 1, perPage: 200 });
-    const users = (usersPage?.users ?? []).filter((u) => staffIds.includes(u.id));
-    const { data: profiles } = await supabaseAdmin
+    type AuthUser = {
+      id: string;
+      email?: string | null;
+      created_at?: string;
+      last_sign_in_at?: string | null;
+      banned_until?: string | null;
+      user_metadata?: { full_name?: unknown };
+    };
+    const authById = new Map<string, AuthUser>();
+    try {
+      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      const { data: usersPage } = await supabaseAdmin.auth.admin.listUsers({ page: 1, perPage: 200 });
+      for (const u of usersPage?.users ?? []) {
+        if (staffIds.includes(u.id)) authById.set(u.id, u as AuthUser);
+      }
+    } catch {
+      // sb_secret_ n’est pas un JWT : Auth Admin échoue, la liste passe par RLS.
+    }
+
+    const { data: profiles, error: profileErr } = await db
       .from("profiles")
-      .select("id, full_name, avatar_url")
+      .select("id, full_name, avatar_url, created_at")
       .in("id", staffIds);
-    const ids = staffIds;
-    const { data: logs } = ids.length
-      ? await supabaseAdmin
-          .from("activity_logs")
-          .select("actor_id, action, created_at")
-          .in("actor_id", ids)
-          .order("created_at", { ascending: false })
-          .limit(400)
-      : { data: [] as { actor_id: string | null; action: string; created_at: string }[] };
+    if (profileErr) throw new Error(teamError(profileErr, "Impossible de charger les profils."));
+
+    const { data: logs } = await db
+      .from("activity_logs")
+      .select("actor_id, actor_email, action, created_at")
+      .in("actor_id", staffIds)
+      .order("created_at", { ascending: false })
+      .limit(400);
 
     const profileName = new Map((profiles ?? []).map((p) => [p.id, p.full_name]));
     const profileAvatar = new Map((profiles ?? []).map((p) => [p.id, p.avatar_url]));
-    return users.map((u) => {
-      const memberLogs = (logs ?? []).filter((l) => l.actor_id === u.id);
+    const profileCreated = new Map((profiles ?? []).map((p) => [p.id, p.created_at]));
+    const emailFromLogs = new Map<string, string>();
+    for (const l of logs ?? []) {
+      if (l.actor_id && l.actor_email && !emailFromLogs.has(l.actor_id)) {
+        emailFromLogs.set(l.actor_id, l.actor_email);
+      }
+    }
+
+    return staffIds.map((id) => {
+      const u = authById.get(id);
+      const memberLogs = (logs ?? []).filter((l) => l.actor_id === id);
       const lastSignInLog = memberLogs.find((l) => l.action === "user.signin");
-      const bannedUntil = (u as { banned_until?: string | null }).banned_until ?? null;
+      const bannedUntil = u?.banned_until ?? null;
       const banned = Boolean(bannedUntil && new Date(bannedUntil).getTime() > Date.now());
-      const metaName = typeof u.user_metadata?.full_name === "string" ? u.user_metadata.full_name : null;
+      const metaName = typeof u?.user_metadata?.full_name === "string" ? u.user_metadata.full_name : null;
       return {
-        id: u.id,
-        email: u.email,
-        full_name: profileName.get(u.id) || metaName,
-        avatar_url: profileAvatar.get(u.id) ?? null,
-        created_at: u.created_at,
-        last_sign_in_at: u.last_sign_in_at ?? lastSignInLog?.created_at ?? null,
+        id,
+        email: u?.email ?? emailFromLogs.get(id) ?? null,
+        full_name: profileName.get(id) || metaName,
+        avatar_url: profileAvatar.get(id) ?? null,
+        created_at: u?.created_at ?? profileCreated.get(id) ?? new Date().toISOString(),
+        last_sign_in_at: u?.last_sign_in_at ?? lastSignInLog?.created_at ?? null,
         banned,
         banned_until: bannedUntil,
         action_count: memberLogs.filter((l) => l.action !== "user.signin").length,
-        roles: rolesByUser.get(u.id) ?? [],
+        roles: rolesByUser.get(id) ?? [],
       };
     });
   });

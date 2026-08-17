@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import { useConfirm } from "@/components/confirm-provider";
 import { useAuth } from "@/hooks/useAuth";
 import { mediaFolderPrefix } from "@/lib/workspace";
+import { safeUploadName } from "@/lib/security-headers";
 
 export const Route = createFileRoute("/_authenticated/media")({
   head: () => ({ meta: [{ title: "Médias — Hexaro" }] }),
@@ -18,6 +19,13 @@ export const Route = createFileRoute("/_authenticated/media")({
 });
 
 const FOLDERS = ["affiches", "videos", "fiches", "documents"] as const;
+const MAX_UPLOAD_BYTES = 15 * 1024 * 1024;
+const ALLOWED_EXT = new Set([
+  "png", "jpg", "jpeg", "webp", "gif", "avif",
+  "mp4", "webm", "mov",
+  "pdf", "txt", "csv", "doc", "docx", "xls", "xlsx",
+]);
+const ALLOWED_MIME = /^(image\/(png|jpeg|webp|gif|avif)|video\/(mp4|webm|quicktime)|application\/pdf|text\/(plain|csv)|application\/vnd\.)/;
 type Preview = { name: string; url: string; kind: "image" | "video" | "pdf" | "other" };
 
 function MediaPage() {
@@ -44,9 +52,14 @@ function MediaPage() {
   const upload = useMutation({
     mutationFn: async (files: FileList) => {
       for (const f of Array.from(files)) {
-        const key = `${prefix}/${Date.now()}-${f.name}`;
-        const { error } = await supabase.storage.from("media").upload(key, f, { upsert: false, contentType: f.type });
-        if (error) throw error;
+        if (f.size > MAX_UPLOAD_BYTES) throw new Error(`« ${f.name} » dépasse 15 Mo.`);
+        const ext = (f.name.split(".").pop() || "").toLowerCase();
+        if (!ALLOWED_EXT.has(ext) || (f.type && !ALLOWED_MIME.test(f.type) && ext !== "mov")) {
+          throw new Error(`Type de fichier refusé : ${f.name}`);
+        }
+        const key = `${prefix}/${Date.now()}-${safeUploadName(f.name)}`;
+        const { error } = await supabase.storage.from("media").upload(key, f, { upsert: false, contentType: f.type || undefined });
+        if (error) throw new Error("Téléversement impossible.");
       }
     },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["media"] }); toast.success("Fichiers téléversés"); },
@@ -76,7 +89,7 @@ function MediaPage() {
 
   async function handlePreview(name: string) {
     const ext = (name.split(".").pop() || "").toLowerCase();
-    const kind: Preview["kind"] = ["png", "jpg", "jpeg", "webp", "gif", "avif", "svg"].includes(ext)
+    const kind: Preview["kind"] = ["png", "jpg", "jpeg", "webp", "gif", "avif"].includes(ext)
       ? "image"
       : ["mp4", "webm", "mov", "ogg"].includes(ext)
         ? "video"
@@ -124,7 +137,7 @@ function MediaPage() {
         <EmptyState title="Ce dossier est vide" description="Téléversez votre premier fichier." />
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
-          {filtered.map((f) => <FileTile key={f.name} folder={folder} file={f} onPreview={() => handlePreview(f.name)} onDownload={() => handleDownload(f.name)} onDelete={async () => { if (await confirmAction({ title: "Supprimer ce fichier ?", description: f.name, destructive: true, confirmLabel: "Supprimer" })) remove.mutate(f.name); }} />)}
+          {filtered.map((f) => <FileTile key={f.name} prefix={prefix} file={f} onPreview={() => handlePreview(f.name)} onDownload={() => handleDownload(f.name)} onDelete={async () => { if (await confirmAction({ title: "Supprimer ce fichier ?", description: f.name, destructive: true, confirmLabel: "Supprimer" })) remove.mutate(f.name); }} />)}
         </div>
       )}
 
@@ -134,7 +147,7 @@ function MediaPage() {
           <div className="rounded-xl overflow-hidden bg-muted/40 grid place-items-center max-h-[65vh]">
             {preview?.kind === "image" && <img src={preview.url} alt={preview.name} className="max-h-[65vh] w-auto object-contain" />}
             {preview?.kind === "video" && <video src={preview.url} controls className="max-h-[65vh] w-full" />}
-            {preview?.kind === "pdf" && <iframe src={preview.url} title={preview.name} className="w-full h-[65vh]" />}
+            {preview?.kind === "pdf" && <iframe src={preview.url} title={preview.name} sandbox="" className="w-full h-[65vh]" />}
             {preview?.kind === "other" && <p className="p-10 text-sm text-muted-foreground">Aperçu non disponible pour ce type de fichier.</p>}
           </div>
           <div className="flex justify-end">
@@ -148,7 +161,7 @@ function MediaPage() {
   );
 }
 
-function FileTile({ folder, file, onPreview, onDownload, onDelete }: any) {
+function FileTile({ prefix, file, onPreview, onDownload, onDelete }: any) {
   const ext = (file.name.split(".").pop() || "").toLowerCase();
   const isImg = ["png", "jpg", "jpeg", "webp", "gif", "avif"].includes(ext);
   const isVideo = ["mp4", "webm", "mov"].includes(ext);
@@ -157,7 +170,7 @@ function FileTile({ folder, file, onPreview, onDownload, onDelete }: any) {
 
   const [thumb, setThumb] = useState<string | null>(null);
   if (isImg && !thumb) {
-    supabase.storage.from("media").createSignedUrl(`${folder}/${file.name}`, 60 * 10).then(({ data }) => data && setThumb(data.signedUrl));
+    supabase.storage.from("media").createSignedUrl(`${prefix}/${file.name}`, 60 * 10).then(({ data }) => data && setThumb(data.signedUrl));
   }
 
   return (

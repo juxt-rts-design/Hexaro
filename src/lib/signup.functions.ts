@@ -9,20 +9,24 @@ const schema = z.object({
 
 export const signUpAccount = createServerFn({ method: "POST" })
   .inputValidator((v: unknown) => schema.parse(v))
+  .handler(async () => {
+    const { getRequest } = await import("@tanstack/react-start/server");
+    const { assertRateLimit, clientIp } = await import("@/lib/rate-limit.server");
+    assertRateLimit(`signup:${clientIp(getRequest())}`, 5, 15 * 60_000);
+    throw new Error("L’inscription publique est fermée. Demande un accès à l’administrateur.");
+  });
+
+export const gateAuthAttempt = createServerFn({ method: "POST" })
+  .inputValidator((v: unknown) =>
+    z.object({ email: z.string().email().max(254).optional() }).parse(v ?? {}),
+  )
   .handler(async ({ data }) => {
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data: created, error } = await supabaseAdmin.auth.admin.createUser({
-      email: data.email.trim().toLowerCase(),
-      password: data.password,
-      email_confirm: true,
-      user_metadata: { full_name: data.full_name.trim() },
-    });
-    if (error || !created?.user) {
-      const msg = error?.message ?? "Inscription impossible";
-      if (/already|registered|exists/i.test(msg)) {
-        throw new Error("Un compte existe déjà avec cet email. Connectez-vous.");
-      }
-      throw new Error(msg);
+    const { getRequest } = await import("@tanstack/react-start/server");
+    const { assertRateLimit, clientIp } = await import("@/lib/rate-limit.server");
+    const ip = clientIp(getRequest());
+    assertRateLimit(`auth-ip:${ip}`, 12, 15 * 60_000);
+    if (data.email) {
+      assertRateLimit(`auth-email:${data.email.trim().toLowerCase()}`, 5, 15 * 60_000);
     }
     return { ok: true as const };
   });

@@ -26,7 +26,8 @@ const SUGGESTIONS = [
 ];
 
 function renderText(text: string) {
-  const parts = text.split(/(\*\*[^*]+\*\*)/g);
+  const safe = text.replace(/<[^>]*>/g, "");
+  const parts = safe.split(/(\*\*[^*]+\*\*)/g);
   return parts.map((part, i) => {
     if (part.startsWith("**") && part.endsWith("**")) {
       return (

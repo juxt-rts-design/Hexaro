@@ -18,6 +18,7 @@ import { SERVICE_SUBSCRIPTIONS_SQL, isMissingTableError } from "@/lib/service-su
 import { PageClientFilter, useClientSearch } from "@/components/client-search";
 import { clientMatches, searchHaystack } from "@/lib/client-search";
 import { logActivity } from "@/lib/activity";
+import { AccountPassword } from "@/components/account-password";
 
 export const Route = createFileRoute("/_authenticated/s/$slug")({
   head: ({ params }) => ({ meta: [{ title: `${params.slug} — Hexaro` }] }),
@@ -41,7 +42,7 @@ function CustomServicePage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("service_subscriptions")
-        .select("*")
+        .select("id, workspace_id, service_id, client_name, phone, account_email, start_date, duration_days, price, status, notes, expires_at, created_at, updated_at")
         .eq("service_id", service!.id)
         .order("created_at", { ascending: false });
       if (error) {
@@ -72,17 +73,17 @@ function CustomServicePage() {
   const upsert = useMutation({
     mutationFn: async (v: any) => {
       if (!service) throw new Error("Service introuvable");
-      const payload = {
+      const payload: Record<string, unknown> = {
         service_id: service.id,
         client_name: v.client_name,
         phone: v.phone || null,
         account_email: v.account_email || null,
-        account_password: v.account_password || null,
         start_date: v.start_date ? new Date(v.start_date).toISOString() : new Date().toISOString(),
         duration_days: parseInt(v.duration_days, 10) || 30,
         price: parseFloat(v.price) || 0,
         notes: v.notes || null,
       };
+      if (v.account_password) payload.account_password = v.account_password;
       const table = supabase.from("service_subscriptions");
       if (v.id) {
         const { error } = await table.update(payload).eq("id", v.id);
@@ -297,6 +298,9 @@ function CustomServicePage() {
                   <StatusPill tone={exp.tone}>{exp.label}</StatusPill>
                 </div>
                 <p className="text-xs text-muted-foreground">{s.account_email || s.phone || "—"}</p>
+                <div className="mt-1 text-xs text-muted-foreground" onClick={(e) => e.stopPropagation()}>
+                  <AccountPassword service="service" accountId={s.id} />
+                </div>
                 <p className="mt-3 text-sm font-semibold uppercase">{formatMoney(s.price)}</p>
                 <p className="text-xs text-muted-foreground">{s.duration_days} jours</p>
                 <div className="mt-3 flex justify-end">
@@ -403,7 +407,7 @@ function SubForm({ initial, defaults, onSubmit, submitting }: any) {
     client_name: initial?.client_name ?? "",
     phone: initial?.phone ?? "",
     account_email: initial?.account_email ?? "",
-    account_password: initial?.account_password ?? "",
+    account_password: "",
     start_date: initial?.start_date ? new Date(initial.start_date).toISOString().slice(0, 10) : new Date().toISOString().slice(0, 10),
     duration_days: String(initial?.duration_days ?? defaults?.duration_days ?? 30),
     price: String(initial?.price ?? defaults?.price ?? 0),
@@ -437,7 +441,7 @@ function SubForm({ initial, defaults, onSubmit, submitting }: any) {
           <Input type="email" value={v.account_email} onChange={(e) => setV({ ...v, account_email: e.target.value })} />
         </div>
         <div className="space-y-2 col-span-2">
-          <Label>Mot de passe du compte</Label>
+          <Label>Mot de passe du compte{initial ? " (vide = inchangé)" : ""}</Label>
           <Input type="password" value={v.account_password} onChange={(e) => setV({ ...v, account_password: e.target.value })} />
         </div>
         <div className="space-y-2">

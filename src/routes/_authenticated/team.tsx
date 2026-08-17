@@ -45,7 +45,7 @@ function TeamPage() {
   const [open, setOpen] = useState(false);
   const [inspect, setInspect] = useState<TeamMember | null>(null);
 
-  const { data = [], isLoading } = useQuery({
+  const { data = [], isLoading, isError, error } = useQuery({
     queryKey: ["team"],
     queryFn: () => fetchTeam(),
     enabled: isAdmin,
@@ -93,7 +93,12 @@ function TeamPage() {
       />
 
       {isLoading ? null :
-       data.length === 0 ? <EmptyState title="Aucun membre" /> : (
+       isError ? (
+        <EmptyState
+          title="Impossible de charger l’équipe"
+          description={error instanceof Error ? error.message : "Réessaie dans un instant."}
+        />
+       ) : data.length === 0 ? <EmptyState title="Aucun membre" /> : (
         <div className="hex-glass rounded-2xl overflow-hidden">
           <table className="w-full text-sm">
             <thead className="text-left text-xs uppercase tracking-wider text-muted-foreground bg-muted/30">

@@ -12,4 +12,12 @@ export default defineConfig({
     // nitro/vite builds from this
     server: { entry: "server" },
   },
+  vite: {
+    build: {
+      sourcemap: false,
+      minify: true,
+      cssMinify: true,
+      reportCompressedSize: false,
+    },
+  },
 });

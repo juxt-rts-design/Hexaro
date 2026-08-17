@@ -1,16 +1,11 @@
 import { createServerFn } from "@tanstack/react-start";
 
-// Crée idempotemment le compte administrateur Hexaro au premier démarrage.
-// Endpoint public par nécessité : le premier admin doit être provisionné
-// avant qu'il n'existe une session. La fonction ne fait qu'insérer le compte
-// s'il n'existe pas déjà, et échoue silencieusement autrement.
 export const ensureAdminSeeded = createServerFn({ method: "POST" }).handler(async () => {
+  const { getRequest } = await import("@tanstack/react-start/server");
+  const { assertRateLimit, clientIp } = await import("@/lib/rate-limit.server");
+  assertRateLimit(`seed:${clientIp(getRequest())}`, 5, 60_000);
+
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-
-  const ADMIN_EMAIL = "hexaro@gmail.com";
-  const ADMIN_PASSWORD = "jux@trts123!";
-
-  // Existe déjà ?
   const { data: existing } = await supabaseAdmin
     .from("user_roles")
     .select("user_id")
@@ -18,20 +13,25 @@ export const ensureAdminSeeded = createServerFn({ method: "POST" }).handler(asyn
     .limit(1)
     .maybeSingle();
 
-  if (existing) return { ok: true, created: false };
+  if (existing) return { ok: true as const, created: false };
 
-  // Chercher l'user via listUsers (paginé, mais 0 users au démarrage)
+  const email = String(process.env.HEXARO_ADMIN_EMAIL ?? "").trim().toLowerCase();
+  const password = String(process.env.HEXARO_ADMIN_PASSWORD ?? "");
+  if (!email || !email.includes("@") || password.length < 12) {
+    return { ok: true as const, created: false };
+  }
+
   const { data: usersPage } = await supabaseAdmin.auth.admin.listUsers({ page: 1, perPage: 100 });
-  let adminUser = usersPage?.users.find((u) => u.email === ADMIN_EMAIL);
+  let adminUser = usersPage?.users.find((u) => (u.email ?? "").toLowerCase() === email);
 
   if (!adminUser) {
     const { data: created, error } = await supabaseAdmin.auth.admin.createUser({
-      email: ADMIN_EMAIL,
-      password: ADMIN_PASSWORD,
+      email,
+      password,
       email_confirm: true,
       user_metadata: { full_name: "Administrateur Hexaro" },
     });
-    if (error || !created?.user) return { ok: false, error: error?.message ?? "create failed" };
+    if (error || !created?.user) return { ok: true as const, created: false };
     adminUser = created.user;
   }
 
@@ -39,5 +39,5 @@ export const ensureAdminSeeded = createServerFn({ method: "POST" }).handler(asyn
     .from("user_roles")
     .upsert({ user_id: adminUser.id, role: "admin" }, { onConflict: "user_id,role" });
 
-  return { ok: true, created: true };
+  return { ok: true as const, created: true };
 });

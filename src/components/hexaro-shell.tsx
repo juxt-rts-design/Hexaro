@@ -53,6 +53,27 @@ export function HexaroShell({ children }: { children: ReactNode }) {
     preloadAppRoutes(router, services);
   }, [queryClient, router, services]);
 
+  useEffect(() => {
+    const idleMs = 45 * 60 * 1000;
+    let last = Date.now();
+    const bump = () => {
+      last = Date.now();
+    };
+    const timer = window.setInterval(async () => {
+      if (Date.now() - last < idleMs) return;
+      await supabase.auth.signOut();
+      toast.message("Session expirée pour inactivité");
+      navigate({ to: "/auth", replace: true });
+    }, 30_000);
+    window.addEventListener("pointerdown", bump);
+    window.addEventListener("keydown", bump);
+    return () => {
+      window.clearInterval(timer);
+      window.removeEventListener("pointerdown", bump);
+      window.removeEventListener("keydown", bump);
+    };
+  }, [navigate]);
+
   const displayName = me?.full_name || user?.user_metadata?.full_name || user?.email || "";
   const avatarId = me?.avatar_url ?? null;
 

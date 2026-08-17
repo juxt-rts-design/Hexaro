@@ -59,7 +59,7 @@ export const PROFILE_AVATARS: AvatarDef[] = entries.map(([path, src], i) => {
 
 export function avatarSrc(id?: string | null) {
   if (!id) return null;
-  if (/^(https?:)?\/\//.test(id) || id.startsWith("/")) return id;
+  if (/^(https?:)?\/\//.test(id) || id.startsWith("/") || id.includes("..")) return null;
   const found = PROFILE_AVATARS.find((a) => a.id === id || a.aliases.includes(id));
   return found?.src ?? null;
 }

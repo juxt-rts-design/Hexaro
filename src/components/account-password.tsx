@@ -7,7 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
  * Le mot de passe n'est jamais chargé avec le compte : il est révélé à la demande
  * via une RPC qui ne le renvoie que pour l'espace courant.
  */
-export function AccountPassword({ service, accountId }: { service: "netflix" | "spotify"; accountId: string }) {
+export function AccountPassword({ service, accountId }: { service: "netflix" | "spotify" | "service"; accountId: string }) {
   const [pw, setPw] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 

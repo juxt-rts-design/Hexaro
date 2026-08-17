@@ -198,6 +198,8 @@ function ProfilePage() {
         </div>
       </Card>
 
+      <MfaCard />
+
       <Card className="p-6">
         <h3 className="font-semibold mb-4 flex items-center gap-2"><Bell className="h-4 w-4 text-brand" /> Préférences de notification</h3>
         <div className="space-y-4">
@@ -228,5 +230,118 @@ function ProfilePage() {
         </DialogContent>
       </Dialog>
     </div>
+  );
+}
+
+function MfaCard() {
+  const [factorId, setFactorId] = useState<string | null>(null);
+  const [qr, setQr] = useState<string | null>(null);
+  const [secret, setSecret] = useState<string | null>(null);
+  const [code, setCode] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [enabled, setEnabled] = useState(false);
+
+  async function refresh() {
+    const { data } = await supabase.auth.mfa.listFactors();
+    const totp = data?.totp.find((f) => f.status === "verified");
+    setEnabled(Boolean(totp));
+    setFactorId(totp?.id ?? null);
+  }
+
+  useEffect(() => {
+    void refresh();
+  }, []);
+
+  async function startEnroll() {
+    setBusy(true);
+    try {
+      const { data, error } = await supabase.auth.mfa.enroll({
+        factorType: "totp",
+        friendlyName: "Hexaro",
+      });
+      if (error || !data) throw new Error("Impossible d’activer le double facteur.");
+      setFactorId(data.id);
+      setQr(data.totp.qr_code);
+      setSecret(data.totp.secret);
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : "Impossible d’activer le double facteur.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function confirmEnroll() {
+    if (!factorId) return;
+    setBusy(true);
+    try {
+      const { data: challenge, error: challengeErr } = await supabase.auth.mfa.challenge({ factorId });
+      if (challengeErr || !challenge) throw new Error("Code invalide.");
+      const { error } = await supabase.auth.mfa.verify({
+        factorId,
+        challengeId: challenge.id,
+        code: code.replace(/\s/g, ""),
+      });
+      if (error) throw new Error("Code incorrect.");
+      toast.success("Double authentification activée");
+      setQr(null);
+      setSecret(null);
+      setCode("");
+      await refresh();
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : "Code incorrect");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function disable() {
+    if (!factorId) return;
+    setBusy(true);
+    try {
+      const { error } = await supabase.auth.mfa.unenroll({ factorId });
+      if (error) throw new Error("Impossible de désactiver.");
+      toast.success("Double authentification désactivée");
+      setEnabled(false);
+      setFactorId(null);
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : "Impossible de désactiver.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <Card className="p-6">
+      <h3 className="font-semibold mb-2 flex items-center gap-2">
+        <Shield className="h-4 w-4 text-brand" /> Double authentification (TOTP)
+      </h3>
+      <p className="text-sm text-muted-foreground mb-4">
+        Application Authenticator (Google, Microsoft, Authy). Pas de notifications push : aucune fatigue MFA.
+      </p>
+      {enabled && !qr ? (
+        <Button variant="outline" disabled={busy} onClick={() => void disable()}>
+          {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : "Désactiver"}
+        </Button>
+      ) : qr ? (
+        <div className="space-y-3 max-w-sm">
+          <img src={qr} alt="QR code TOTP" className="h-44 w-44 rounded-xl bg-white p-2" />
+          {secret ? <p className="text-xs break-all text-muted-foreground">Clé : {secret}</p> : null}
+          <Input
+            inputMode="numeric"
+            maxLength={8}
+            value={code}
+            onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 8))}
+            placeholder="Code à 6 chiffres"
+          />
+          <Button disabled={busy || code.length < 6} onClick={() => void confirmEnroll()} className="bg-brand text-brand-foreground">
+            {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : "Confirmer"}
+          </Button>
+        </div>
+      ) : (
+        <Button disabled={busy} onClick={() => void startEnroll()} className="bg-brand text-brand-foreground">
+          {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : "Activer le double facteur"}
+        </Button>
+      )}
+    </Card>
   );
 }

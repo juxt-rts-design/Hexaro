@@ -14,6 +14,7 @@ import { reportLovableError } from "../lib/lovable-error-reporting";
 import { supabase } from "@/integrations/supabase/client";
 import { Toaster } from "@/components/ui/sonner";
 import { ConfirmProvider } from "@/components/confirm-provider";
+import { SOURCE_GUARD_INLINE, installSourceGuard } from "@/lib/source-guard";
 
 function NotFoundComponent() {
   return (
@@ -50,7 +51,9 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
         <h1 className="text-xl font-semibold tracking-tight text-foreground">
           Une erreur est survenue
         </h1>
-        <p className="mt-2 text-sm text-muted-foreground">{error.message}</p>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Réessaie dans un instant. Si le problème continue, reconnecte-toi.
+        </p>
         <div className="mt-6 flex flex-wrap justify-center gap-2">
           <button
             onClick={() => { router.invalidate(); reset(); }}
@@ -85,7 +88,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:title", content: "Hexaro — Plateforme de gestion d'abonnements" },
       { property: "og:description", content: "Centralisez Netflix, Spotify, Internet Libertis et vos autres services numériques." },
       { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
+      { name: "robots", content: "noindex, nofollow" },
+      { name: "referrer", content: "strict-origin-when-cross-origin" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
@@ -103,6 +107,9 @@ function RootShell({ children }: { children: ReactNode }) {
     <html lang="fr" className="dark">
       <head>
         <HeadContent />
+        {import.meta.env.PROD ? (
+          <script dangerouslySetInnerHTML={{ __html: SOURCE_GUARD_INLINE }} />
+        ) : null}
       </head>
       <body>
         {children}
@@ -117,6 +124,7 @@ function RootComponent() {
   const router = useRouter();
 
   useEffect(() => {
+    installSourceGuard();
     const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
       if (event !== "SIGNED_IN" && event !== "SIGNED_OUT" && event !== "USER_UPDATED") return;
       router.invalidate();
